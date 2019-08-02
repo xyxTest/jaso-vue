@@ -9,11 +9,6 @@ import MenuManager from './views/system_manager/MenuManager.vue'
 import DepartmentManager from './views/system_manager/DepartmentManager.vue'
 import ImageChangeManager from './views/system_manager/ImageChangeManager.vue'
 import ProjectManager from './views/project_manager/ProjectManager.vue'
-import Form from './views/nav1/Form.vue'
-import user from './views/nav1/user.vue'
-import Page4 from './views/nav2/Page4.vue'
-import Page5 from './views/nav2/Page5.vue'
-import Page6 from './views/nav3/Page6.vue'
 import echarts from './views/charts/echarts.vue'
 
 let routes = [
@@ -60,8 +55,7 @@ let routes = [
         name: '实测实量',
         iconCls: 'fa fa-id-card-o',
         children: [
-            { path: '/page4', component: Page4, name: '页面4' },
-            { path: '/page5', component: Page5, name: '页面5' }
+
         ]
     },
     {

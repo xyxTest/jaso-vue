@@ -12,14 +12,11 @@
                         :value="item.value">
                 </el-option>
             </el-select>
-            <el-select v-model="search.departmentId" placeholder="部门选择" style="width: 180px; margin:10px 5px;  " >
-                <el-option
-                        v-for="item in departmentIds"
-                        :key="item.departmentId"
-                        :label="item.departmentName"
-                        :value="item.departmentId">
-                </el-option>
-            </el-select>
+            <el-cascader
+                    v-model="search.departmentTree"
+                    :options="departmentOptions"
+                    :props="{ multiple: true, checkStrictly: true }"
+                    @change="handleChange" placeholder="请选择部门"></el-cascader>
             <el-button type="primary" style="margin:10px 5px; " @click="searchUser">搜索</el-button>
             <!-- 新增弹出框 -->
             <el-button type="primary" style="margin:10px 5px; " @click="openAddPage">新增</el-button>
@@ -62,22 +59,21 @@
                     <el-form-item label="角色类型" :label-width="formLabelWidth">
                         <el-select v-model="form.roleId" multiple placeholder="请选择用户角色" style="width:300px">
                             <el-option
-                                    v-for="(item, index) in roleList"
+                                    v-for="(item,index) in roleList"
                                     :key="index"
                                     :label="item.roleName"
                                     :value="item.roleId">
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="部门" :label-width="formLabelWidth" prop="departmentId" >
-                        <el-select v-model="form.departmentId" placeholder="请选择部门" style="width:300px">
-                            <el-option
-                                    v-for="item in departmentIds"
-                                    :key="item.departmentId"
-                                    :label="item.departmentName"
-                                    :value="item.departmentId">
-                            </el-option>
-                        </el-select>
+                    <el-form-item label="部门" :label-width="formLabelWidth" >
+                        <el-cascader
+                                v-model="form.departmentTree"
+                                :options="departmentOptions"
+                                :show-all-levels="false"
+                                :change-on-select="true"
+                                :props="{ multiple: true, checkStrictly: true }"
+                                @change="handleChange"></el-cascader>
                     </el-form-item>
                     <el-form-item label="生成APP账号" :label-width="formLabelWidth" prop="isApp">
                         <el-switch
@@ -133,10 +129,10 @@
                     prop="userPcPost"
                     label="职称">
             </el-table-column>
-            <el-table-column
+      <!--      <el-table-column
                     prop="departmentId"
                     label="部门">
-            </el-table-column>
+            </el-table-column>-->
             <el-table-column
                     prop="userPcType"
                     label="用户类型">
@@ -214,6 +210,7 @@
                 /*新增弹出框操作*/
                 dialogTableVisible: false,
                 dialogFormVisible: false,
+                departmentOptions:[],
                 form: {
                     pcUserName: '',
                     userPcTel: '',
@@ -225,10 +222,11 @@
                     userPcPost: '',
                     userPcIcon: '',
                     userPcIdCard: '',
-                    departmentId: [],
+                    departmentTree: [],
                     roleId: [],
                     isApp: 0
                 },
+                userRoles:[{}],
                 userPcTypeList:[
                     {name:'公司管理人员',value: 0},
                     {name:'项目人员',value: 1}
@@ -241,10 +239,8 @@
                     pcUserName: null,
                     userPcTel:null,
                     userPcRealName:null,
-                    userPcType:null,
-                    departmentId:null
+                    userPcType:null
                 },
-                departmentIds: [],
                 roleList: [],
                 page: {
                     currentPage: 1,
@@ -262,6 +258,33 @@
             }
         },
         methods: {
+            handleChange(value) {
+                console.log(value);
+            },
+            //获取部门树
+            getDepartmentTree(){
+                this.api.selectDepartmentTree().then( res =>{
+                    this.departmentOptions=res.data;
+                }).catch(res =>{
+                    this.$message.error(res.message);
+                });
+            },
+            //用户获取其的部门idList
+            getUserDepartmentList(row){
+                this.api.getUserDepartmentList(row).then( res =>{
+                    let getList = res.data;
+                    let arraList=[];
+                    console.log('getlist:',getList);
+                    if(getList.length>0){
+                        for(let i=0;i<getList.length;i++){
+                            debugger
+                            arraList.push(getTreeDeepArr(getList[i].departmentId,this.departmentOptions));
+                        }
+                        //this.form.departmentTree=arraList;
+                        this.$set(this.form, 'departmentTree', arraList);
+                    }
+                })
+            },
             //删除选中
             deleteSelect(row){
                 this.api.deleteUserPc(this.multipleSelection).then( res =>{
@@ -288,15 +311,18 @@
                 this.form.againPassword=this.form.pcPassword;
                 //获取用户详情
                 this.getUserPcDetail(row);
+                //获取用户的组织架构
+                this.getUserDepartmentList(row);
                 //加载用户角色列表
                 this.roleListGet();
-                console.log('aaa', this.form)
                 this.dialogFormVisible = true;
             },
             //获取用户详情(获取当前用户角色)
             getUserPcDetail(row){
                 this.api.getUserPcDetail(row).then(res => {
+                    debugger
                     this.userRoles = res.data
+                    console.log('roleList',this.roleList);
                     this.form.roleId=res.data.map(e => {
                         return e.roleId
                     });
@@ -319,19 +345,14 @@
             submit(form){
                 this.$refs['form'].validate((valid) => {
                     if (valid) {
-                        this.dialogFormVisible = false;
-                        this.form.roleId = this.form.roleId.map(e => {
-                            let roles = this.userRoles.filter(e2 => {
-                                return e2.roleId == e
-                            })
-                            if (roles.length > 0) {
-                                return roles[0]
-                            } else {
-                                return {roleId: e}
-                            }
-                        })
-                        console.log("form", this.form)
+                        debugger
+                        console.log('this.form',this.form);
+                        if(this.form.roleId.length>0){
+
+                        }
                         this.api.addUserPc(this.form).then(res =>{
+                            this.initDatas();
+                            this.dialogFormVisible = false;
                         }).catch(res =>{
                             this.$message.error(res.message);
                         })
@@ -343,18 +364,7 @@
             },
             //密码验证
 
-            infoGet(){
-                ///加载部门信息
-                var userInfo = JSON.parse(sessionStorage.getItem("user"))
-                this.api.getDepartmentList({
-                    "companyId":userInfo.companyId
-                }).then(res =>{
-                    this.departmentIds = res.data;
-                }).catch(res =>{
-                    this.$message.error(res.message);
-                });
-                //加载
-            },
+
 
             //加载角色列表
             roleListGet(){
@@ -418,8 +428,44 @@
             }
         },
         mounted() {
+            this.getDepartmentTree();
             this.initDatas();
-            this.infoGet();
         }
+    }
+    ///element级联选择器的方法
+    function getTreeDeepArr(key, treeData) {
+
+        let arr = []; // 在递归时操作的数组
+        let returnArr = []; // 存放结果的数组
+        let depth = 0; // 定义全局层级
+        // 定义递归函数
+        function childrenEach(childrenData, depthN) {
+
+            for (var j = 0; j < childrenData.length; j++) {
+
+                depth = depthN; // 将执行的层级赋值 到 全局层级
+
+                arr[depthN] = (childrenData[j].value);
+
+                if (childrenData[j].value == key) {
+
+                    // returnArr = arr; // 原写法不行, 因 此赋值存在指针关系
+                    returnArr = arr.slice(0, depthN+1); //将目前匹配的数组，截断并保存到结果数组，
+                    break
+
+                } else {
+
+                    if (childrenData[j].children) {
+
+                        depth ++;
+                        childrenEach(childrenData[j].children, depth);
+
+                    }
+                }
+
+            }
+            return returnArr;
+        }
+        return childrenEach(treeData, depth);
     }
 </script>
