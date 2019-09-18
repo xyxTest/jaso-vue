@@ -12,32 +12,22 @@
         <div style="width:80%;float: left">
             <el-dialog title="子级新增" :visible.sync="dialogTreeFormVisible">
                 <el-form :model="form">
-                    <el-form-item label="部门名称" :label-width="formLabelWidth" prop="departmentName">
-                        <el-input v-model="form.departmentName" autocomplete="off" style="width:83%"></el-input>
+                    <el-form-item label="楼栋、楼层名称" :label-width="formLabelWidth" prop="buildingName">
+                        <el-input v-model="form.buildingName" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <!--projectList-->
-                    <el-form-item label="部门类型" :label-width="formLabelWidth" prop="departmentType" >
-                        <el-select v-model="form.departmentType" placeholder="请选择部门类型" style="width:83%">
+                    <el-form-item label="父节点" :label-width="formLabelWidth" hidden>
+                        <el-input v-model="form.pid" autocomplete="off" style="width:83%"></el-input>
+                    </el-form-item>
+                   <el-form-item label="类型" :label-width="formLabelWidth" prop="status" >
+                        <el-select v-model="form.status" placeholder="请选择类型" style="width:300px">
                             <el-option
-                                    v-for="item in options"
+                                    v-for="item in statusList"
                                     :key="item.value"
-                                    :label="item.label"
+                                    :label="item.name"
                                     :value="item.value">
                             </el-option>
                         </el-select>
-                    </el-form-item>
-                    <el-form-item v-if="form.departmentType == 1" label="项目名称" :label-width="formLabelWidth" prop="projectId" >
-                        <el-select v-model="form.projectId" placeholder="请选择项目" style="width:83%">
-                            <el-option
-                                    v-for="item in projectList"
-                                    :key="item.projectId"
-                                    :label="item.projectName"
-                                    :value="item.projectId">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="父节点" :label-width="formLabelWidth" hidden>
-                        <el-input v-model="form.pid" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -45,42 +35,29 @@
                     <el-button type="primary" @click="submitTree('form')">确 定</el-button>
                 </div>
             </el-dialog>
-            <el-dialog title="部门新增" :visible.sync="dialogFormVisible" width="40%">
+            <el-dialog title="楼栋新增" :visible.sync="dialogFormVisible" width="40%">
                 <el-form :model="form" status-icon ref="form">
-                    <el-form-item label="部门名称" :label-width="formLabelWidth" prop="departmentName">
-                        <el-input v-model="form.departmentName" autocomplete="off" style="width:500px"></el-input>
+                    <el-form-item label="楼栋名称" :label-width="formLabelWidth" prop="buildingName">
+                        <el-input v-model="form.buildingName" autocomplete="off" style="width:500px"></el-input>
                     </el-form-item>
                     <!--projectList-->
-                    <el-form-item label="部门类型" :label-width="formLabelWidth" prop="departmentType" >
-                        <el-select v-model="form.departmentType" placeholder="请选择部门类型" style="width:300px">
-                            <el-option
-                                    v-for="item in options"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="等级序号" :label-width="formLabelWidth" prop="sortId" >
-                        <el-input-number v-model="form.sortId" :min="1" :max="10" label="描述文字"></el-input-number>
-                    </el-form-item>
-                    <el-form-item v-if="form.departmentType == 1" label="项目名称" :label-width="formLabelWidth" prop="projectId" >
-                        <el-select v-model="form.projectId" placeholder="请选择项目" style="width:300px">
-                            <el-option
-                                    v-for="item in projectList"
-                                    :key="item.projectId"
-                                    :label="item.projectName"
-                                    :value="item.projectId">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
                     <el-form-item label="父节点" :label-width="formLabelWidth" prop="pid" >
                         <el-select v-model="form.pid" placeholder="请选择父节点" style="width:300px">
                             <el-option
                                     v-for="item in pidList"
-                                    :key="item.departmentId"
-                                    :label="item.departmentName"
-                                    :value="item.departmentId">
+                                    :key="item.buildingName"
+                                    :label="item.buildingName"
+                                    :value="item.projectBuildingId">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="类型" :label-width="formLabelWidth" prop="status" >
+                        <el-select v-model="form.status" placeholder="请选择类型" style="width:300px">
+                            <el-option
+                                    v-for="item in statusList"
+                                    :key="item.value"
+                                    :label="item.name"
+                                    :value="item.value">
                             </el-option>
                         </el-select>
                     </el-form-item>
@@ -104,24 +81,12 @@
                         width="55">
                 </el-table-column>
                 <el-table-column
-                        prop="departmentName"
-                        label="部门名称">
+                        prop="buildingName"
+                        label="楼栋名称">                       
                 </el-table-column>
                 <el-table-column
-                        prop="departmentType"
-                        label="部门类型">
-                    <template slot-scope="scope">
-                        {{scope.row.departmentType=== 1 ? '公司内部部门' : '项目内部部门'}}
-                    </template>
-                </el-table-column>
-                <el-table-column
-                        prop="projectId"
+                        prop="projectName"
                         label="项目名称">
-                    <template slot-scope="scope">
-                        <template  v-for="item in projectList">
-                            {{scope.row.projectId=== item.projectId ? item.projectName : ''}}
-                        </template>
-                    </template>
                 </el-table-column>
                 <el-table-column
                         prop="createTime"
@@ -156,6 +121,7 @@
     export default {
         data() {
             return {
+                statusList:[{"name":"楼栋","value":1},{"name":"楼层","value":2},{"name":"房间号","value":3}],
                 treeData:[],
                 page: {
                     currentPage: 1,
@@ -168,25 +134,16 @@
                 dialogFormVisible: false,
                 dialogTreeFormVisible: false,
                 form: {
-                    departmentName: '',
-                    departmentType: '',
+                    buildingName: '',
                     projectId: '',
                     pid: '',
-                    sortId:1
+                    status:1,
                 },
                 formLabelWidth: '120px',
                 //////////////////////////
                 /*选中删除*/
                 multipleSelection: [],
-                pidList: [{}],
-                projectList: [{}],
-                options: [{
-                    value: 0,
-                    label: '公司内部部门'
-                }, {
-                    value: 1,
-                    label: '项目内部部门'
-                }]
+                pidList: [{}]
             }
         },
         methods: {
@@ -197,7 +154,10 @@
             //新增页面取消按钮
             //新增页面
             openAddPage(){
-                this.dialogFormVisible = true;
+                if(this.utils.checkProject(this)){
+                    this.getProjectBuildingLists();
+                    this.dialogFormVisible = true;
+                }  
             },
             resetForm(form) {
                 /*debugger
@@ -208,7 +168,7 @@
             //提交
             submit(form){
                 this.form.projectId = sessionStorage.getItem("projectId");
-                this.api.addDepartment(this.form).then(res =>{
+                this.api.addProjectBuilding(this.form).then(res =>{
                     this.initDatas();
                     this.dialogFormVisible = false;
                     this.$message.success(res.message);
@@ -218,7 +178,7 @@
             },
             //删除选中
             deleteSelect(row){
-                this.api.deleteDepartment(this.multipleSelection).then( res =>{
+                this.api.deleteProjectBuilding(this.multipleSelection).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -227,7 +187,7 @@
             },
             //删除按钮
             deleteSelects(row){
-                this.api.deleteDepartment([row]).then( res =>{
+                this.api.deleteProjectBuilding([row]).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -237,12 +197,14 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
-            getDepartmentList(){
+            getProjectBuildingLists(){
                 var userInfo = JSON.parse(sessionStorage.getItem("user"));
-                this.api.getDepartmentList({
+                var projectId = JSON.parse(sessionStorage.getItem("projectId"));
+                this.api.getAllProjectBuildingLists({
                     "companyId":userInfo.companyId,
-                    "projectId":JSON.parse(sessionStorage.getItem("projectId"))
+                    "projectId":projectId
                 }).then(res => {
+                    debugger
                     this.pidList=res.data;
                 }).catch(res => {
 
@@ -253,19 +215,18 @@
                 this.api.selectProjectLists({
                     "companyId":userInfo.companyId
                 }).then(res => {
-                    debugger
                     this.projectList=res.data;
                 }).catch(res => {
 
                 });
             },
             initDatas(){
-                this.api.selectDepartmentByPid({
+                this.api.getProjectBuildingList({
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo
                     },
-                    "projectId":JSON.parse(sessionStorage.getItem("projectId"))
+                    'projectId':JSON.parse(sessionStorage.getItem("projectId"))
                 }).then(res => {
                     this.tableData=res.data.data;
                     this.page.total=res.data.page.total;
@@ -298,15 +259,15 @@
             },
             //提交
             submitTree(form){
-                this.form.projectId=sessionStorage.getItem("projectId");
-                this.api.addDepartments(this.form).then(res =>{
+                this.form.projectId = sessionStorage.getItem("projectId");
+                this.api.addProjectBuilding(this.form).then(res =>{
                     if(res.data!=null){
                        let newChild={};
-                        newChild = { id: res.data.departmentId, label: this.form.departmentName, children: [] };
+                        newChild = { id: res.data.projectBuildingId, label: this.form.buildingName, children: [] };
                         if (!this.treeData.children) {
                             this.$set(this.treeData, 'children', []);
                         }
-                        this.getUserPcDepartmetTree();
+                        this.getProjectBuildingTree();
                         this.initDatas();
                         this.dialogTreeFormVisible = false;
                         this.$message.success(res.message);
@@ -317,8 +278,8 @@
                     this.$message.error(res.message);
                 });
             },
-            getUserPcDepartmetTree(){
-              this.api.getUserPcDepartmentTreeList().then(res =>{
+            getProjectBuildingTree(){
+              this.api.getProjectBuildingListTree({"projectId":JSON.parse(sessionStorage.getItem("projectId"))}).then(res =>{
                   this.treeData=res.data;
               })
             },
@@ -327,7 +288,7 @@
                 const children = parent.data.children || parent.data;
                 const index = children.findIndex(d => d.id === data.id);
                 children.splice(index, 1);
-                this.api.deleteDepartment([{'departmentId':data.id}]).then(res =>{
+                this.api.deleteProjectBuilding([{'projectBuildingId':data.id}]).then(res =>{
                     this.initDatas();
                 }).catch(res =>{
                     this.$message.error(res.message);
@@ -346,9 +307,9 @@
         },
         mounted() {
             this.initDatas();
-            this.getUserPcDepartmetTree();
-            this.getDepartmentList();
-           // this.getProjectList();
+            this.getProjectBuildingTree();
+            //this.getDepartmentList();
+            this.getProjectList();
         }
     }
 </script>

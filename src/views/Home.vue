@@ -4,10 +4,20 @@
 			<el-col :span="10" class="logo" :class="collapsed?'logo-collapse-width':'logo-width'">
 				{{collapsed?'':sysName}}
 			</el-col>
-			<el-col :span="10">
+			<el-col :span="1">
 				<div class="tools" @click.prevent="collapse">
 					<i class="fa fa-align-justify"></i>
 				</div>
+			</el-col>
+			<el-col :span="9">
+				<el-select v-model="form.globProjectId" placeholder="请选择项目" style="width:40%" @change="setGlobProjectId">
+					<el-option
+							v-for="item in projectList"
+							:key="item.projectId"
+							:label="item.projectName"
+							:value="item.projectId">
+					</el-option>
+				</el-select>
 			</el-col>
 			<el-col :span="4" class="userinfo">
 				<el-dropdown trigger="hover">
@@ -75,11 +85,13 @@
 	export default {
 		data() {
 			return {
-				sysName:'Vue后端测试页面',
+				projectList:[],
+				sysName:'Jaso智慧安装平台',
 				collapsed:false,
 				sysUserName: '',
 				sysUserAvatar: '',
 				form: {
+					globProjectId:'',
 					name: '',
 					region: '',
 					date1: '',
@@ -104,6 +116,27 @@
 			},
 			handleselect: function (a, b) {
 			},
+			//加载项目列表
+			getProjectList(){
+				let userInfo = JSON.parse(sessionStorage.getItem("user"));
+				this.api.selectProjectLists({
+					"companyId":userInfo.companyId
+				}).then(res => {
+					this.projectList=res.data;
+				}).catch(res => {
+
+				});
+			},
+			//设置全局projectId
+			setGlobProjectId(params){
+				sessionStorage.setItem("projectId",params);
+				for(var i=0;i<this.projectList.length;i++){
+				    if(this.projectList[i].projectId==params){
+                        sessionStorage.setItem("cityCode",this.projectList[i].cityCode);
+                    }
+                }
+				sessionStorage.setItem("projectId",params);
+			},
 			//退出登录
 			logout: function () {
 				var _this = this;
@@ -127,12 +160,12 @@
 			}
 		},
 		mounted() {
+			this.getProjectList();
 			var user = sessionStorage.getItem("user");
 			if (user!==undefined) {
-				debugger;
 				user = JSON.parse(user);
-				this.sysUserName = user.pcUserName || '';
-				this.sysUserAvatar = user.userPcType || '';
+				this.sysUserName = user.userName || '';
+				this.sysUserAvatar = user.userType || '';
 			}
 
 		}

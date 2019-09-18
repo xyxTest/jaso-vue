@@ -2,17 +2,11 @@
     <div>
         <el-dialog title="菜单模块新增" :visible.sync="dialogFormVisible" width="40%">
             <el-form :model="form" status-icon ref="form">
-                <el-form-item label="APP模块名称" :label-width="formLabelWidth" prop="menuAppName">
-                    <el-input v-model="form.menuAppName" autocomplete="off" style="width:500px"></el-input>
+                <el-form-item label="模块名称" :label-width="formLabelWidth" prop="menuName">
+                    <el-input v-model="form.menuName" autocomplete="off" style="width:83%"></el-input>
                 </el-form-item>
-                <el-form-item label="APP模块路径" :label-width="formLabelWidth" prop="menuAppPath">
-                    <el-input v-model="form.menuAppPath" autocomplete="off" style="width:500px"></el-input>
-                </el-form-item>
-                <el-form-item label="PC模块名称" :label-width="formLabelWidth" prop="menuPcName">
-                    <el-input v-model="form.menuPcName" autocomplete="off" style="width:500px"></el-input>
-                </el-form-item>
-                <el-form-item label="PC模块路径" :label-width="formLabelWidth" prop="menuPcPath">
-                    <el-input v-model="form.menuPcPath" autocomplete="off" style="width:500px"></el-input>
+                <el-form-item label="模块路径" :label-width="formLabelWidth" prop="menuPath">
+                    <el-input v-model="form.menuPath" autocomplete="off" style="width:83%"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -34,24 +28,17 @@
                     width="55">
             </el-table-column>
             <el-table-column
-                    prop="menuAppName"
-                    label="APP模块名称">
+                    prop="menuName"
+                    label="模块名称">
             </el-table-column>
             <el-table-column
-                    prop="menuAppPath"
-                    label="APP模块路径">
-            </el-table-column>
-            <el-table-column
-                    prop="menuPcName"
-                    label="PC模块名称">
-            </el-table-column>
-            <el-table-column
-                    prop="menuPcPath"
-                    label="PC模块路径">
+                    prop="menuPath"
+                    label="模块路径">
             </el-table-column>
             <el-table-column
                     prop="createTime"
                     label="创建时间"
+                    :formatter="formatDate"
                     show-overflow-tooltip>
             </el-table-column>
             <el-table-column
@@ -92,10 +79,8 @@
                 dialogTableVisible: false,
                 dialogFormVisible: false,
                 form: {
-                    menuAppName: '',
-                    menuAppPath: '',
-                    menuPcName: '',
-                    menuPcPath: '',
+                    menuName: '',
+                    menuPath: '',
                     createTime: ''
                 },
                 formLabelWidth: '120px',
@@ -112,6 +97,10 @@
             }
         },
         methods: {
+             formatDate(row, column) {
+                let date = new Date(parseInt(row.createTime));
+                return this.api.formatDate(date);
+            },
             //新增页面
             openAddPage(){
                 this.dialogFormVisible = true;

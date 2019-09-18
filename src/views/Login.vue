@@ -51,9 +51,9 @@
             this.logining = true;
             //NProgress.start();
             var loginParams = { username: this.ruleForm2.account, password: this.ruleForm2.checkPass };
-            this.api.callApi('/UserPc/loginPc',{
-              "pcUserName": "admin",
-              "pcPassword": "123456"
+            this.api.callApi('/JasoUser/loginPc',{
+              "userName": "admin",
+              "password": "123456"
             }).then(res => {
               debugger
               sessionStorage.setItem("token",res.token);

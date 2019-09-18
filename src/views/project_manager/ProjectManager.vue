@@ -11,28 +11,55 @@
             <el-dialog title="项目新增" :visible.sync="dialogFormVisible" width="40%" id="pcAddPage">
                 <el-form :model="form" status-icon ref="form">
                     <el-form-item label="项目名称" :label-width="formLabelWidth" prop="projectName">
-                        <el-input v-model="form.projectName" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.projectName" autocomplete="off" style="width:83%"></el-input>
+                    </el-form-item>
+                    <el-form-item label="项目简介" :label-width="formLabelWidth" prop="projectDescribe">
+                        <el-input type='textarea' v-model="form.projectDescribe" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="建设单位" :label-width="formLabelWidth" prop="buildingUnit">
-                        <el-input v-model="form.buildingUnit" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.buildingUnit" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="设计单位" :label-width="formLabelWidth" prop="designUnit">
-                        <el-input v-model="form.designUnit" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.designUnit" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="施工单位" :label-width="formLabelWidth" prop="constructUnit">
-                        <el-input v-model="form.constructUnit" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.constructUnit" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="项目地址" :label-width="formLabelWidth" >
-                        <el-input v-model="form.projectAddress" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.projectAddress" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="项目周期" :label-width="formLabelWidth">
-                        <el-input v-model="form.projectCycle" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.projectCycle" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="项目编号" :label-width="formLabelWidth" prop="projectCode">
-                        <el-input v-model="form.projectCode" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.projectCode" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="项目负责人" :label-width="formLabelWidth" prop="projectLeader">
-                        <el-input v-model="form.projectLeader" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.projectLeader" autocomplete="off" style="width:83%"></el-input>
+                    </el-form-item>
+                    <el-form-item label="城市编码选择" :label-width="formLabelWidth" filterable prop="cityCode">
+                        <el-select v-model="form.cityCode" filterable placeholder="请选择城市" style="width:83%">
+                            <el-option
+                                    v-for="item in cityCodeList"
+                                    :key="item.adcode"
+                                    :label="item.cityName"
+                                    :value="item.adcode">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="项目图片" :label-width="formLabelWidth" prop="projectIcon">
+                        <el-upload
+                                class="upload-demo"
+                                action="http://jasobim.com:8085/api/files/uploadFiles"
+                                :on-success="returnList"
+                                name="file"
+                                v-model="form.projectIcon"
+                                auto-upload
+                                list-type="picture"
+                                :file-list="fileList"
+                                multiple>
+                            <el-button size="small" type="primary">点击上传</el-button>
+                        </el-upload>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -84,7 +111,8 @@
             </el-table-column>
             <el-table-column
                     prop="createTime"
-                    label="创建时间">
+                    label="创建时间"
+                    :formatter="formatDate">
             </el-table-column>
             <el-table-column
                     label="操作"
@@ -111,10 +139,12 @@
 </template>
 <script>
     var pageParams = {page: {pageSize: 10, pageNo: 1}}
+    var filePath="http://jasobim.com:8085/";
     export default {
 
         data() {
             return {
+                fileList:[],
                 search:{
                     projectName: '',
                     designUnit:'',
@@ -129,12 +159,16 @@
                 },
                 formLabelWidth: '120px',
                 tableData: [],
+                cityCodeList:[],
                 dialogTableVisible: false,
                 dialogFormVisible: false,
                 form: {
+                    cityCode:'',
                     projectName: '',
                     buildingUnit: '',
+                    projectIcon:'',
                     constructUnit: '',
+                    projectDescribe:'',
                     designUnit: '',
                     projectAddress: '',
                     projectCycle:'',
@@ -145,6 +179,15 @@
             }
         },
         methods: {
+             formatDate(row, column) {
+                let date = new Date(parseInt(row.createTime));
+                return this.api.formatDate(date);
+            },
+            returnList(response, file, fileList){
+                this.form.projectIcon=response.data[0];
+                console.log('file',file)
+                console.log('fileList',fileList)
+            },	
             //删除选中
             deleteSelect(row){
                 this.api.deleteProject(this.multipleSelection).then( res =>{
@@ -167,7 +210,9 @@
 
             //编辑页面
             updateProject(row){
+                debugger
                 this.form = Object.assign({}, row);
+               this.fileList.push({url:filePath+this.form.projectIcon});
                 this.dialogFormVisible = true;
             },
             //新增页面
@@ -184,6 +229,7 @@
                     this.api.addProject(this.form).then(res =>{
                         this.initDatas();
                         this.dialogFormVisible = false;
+                        this.form=[];
                     }).catch(res =>{
                         this.$message.error(res.message);
                     })
@@ -196,6 +242,7 @@
                         "pageNo": pageParams.page.pageNo
                     }
                 }).then(res => {
+                    debugger
                     this.tableData=res.data.data;
                     this.page.total=res.data.page.total;
                 }).catch(res => {
@@ -234,10 +281,18 @@
                 pageParams.page.pageNo = val
                 this.initDatas()
                 console.log(`当前页: ${val}`);
+            },
+            getAllCityCode(){
+                this.api.getAllCityCode().then(res =>{
+                    this.cityCodeList = res.data;
+                }).catch(res =>{
+
+                });
             }
         },
         mounted() {
             this.initDatas();
+            this.getAllCityCode();
         }
     }
 </script>

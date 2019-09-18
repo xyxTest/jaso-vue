@@ -1,10 +1,10 @@
 <template>
     <div>
         <div style="float: left; margin: 20px 0;">
-            <el-input v-model="search.pcUserName" placeholder="请输入用户名" style="width: 180px; margin:10px 5px;  " ></el-input>
-            <el-input v-model="search.userPcTel" placeholder="请输入手机号码" style="width: 180px; margin:10px 5px;  "></el-input>
-            <el-input v-model="search.userPcRealName" placeholder="请输入真实姓名"style="width: 180px;margin:10px 5px; "></el-input>
-            <el-select v-model="search.userPcType" placeholder="用户类型选择" style="width: 180px; margin:10px 5px;  ">
+            <el-input v-model="search.userName" placeholder="请输入用户名" style="width: 180px; margin:10px 5px;  " ></el-input>
+            <el-input v-model="search.userTel" placeholder="请输入手机号码" style="width: 180px; margin:10px 5px;  "></el-input>
+            <el-input v-model="search.userRealName" placeholder="请输入真实姓名"style="width: 180px;margin:10px 5px; "></el-input>
+            <el-select v-model="search.userType" placeholder="用户类型选择" style="width: 180px; margin:10px 5px;  ">
                 <el-option
                         v-for="item in options"
                         :key="item.value"
@@ -22,32 +22,32 @@
             <el-button type="primary" style="margin:10px 5px; " @click="openAddPage">新增</el-button>
             <el-dialog title="PC端用户新增" :visible.sync="dialogFormVisible" width="40%" id="pcAddPage">
                 <el-form :model="form" status-icon :rules="rules" ref="form">
-                    <el-form-item label="用户名" :label-width="formLabelWidth" prop="pcUserName">
-                        <el-input v-model="form.pcUserName" autocomplete="off" style="width:500px"></el-input>
+                    <el-form-item label="用户名" :label-width="formLabelWidth" prop="userName">
+                        <el-input v-model="form.userName" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
-                    <el-form-item label="密码" :label-width="formLabelWidth" prop="pcPassword">
-                        <el-input v-model="form.pcPassword" type="password" autocomplete="off" style="width:500px"></el-input>
+                    <el-form-item label="密码" :label-width="formLabelWidth" prop="password">
+                        <el-input v-model="form.password" type="password" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="确认密码" :label-width="formLabelWidth" prop="againPassword">
-                        <el-input v-model="form.againPassword" type="password" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.againPassword" type="password" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
-                    <el-form-item label="真实姓名" :label-width="formLabelWidth" prop="userPcRealName">
-                        <el-input v-model="form.userPcRealName" autocomplete="off" style="width:500px"></el-input>
+                    <el-form-item label="真实姓名" :label-width="formLabelWidth" prop="userRealName">
+                        <el-input v-model="form.userRealName" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="职称" :label-width="formLabelWidth" >
-                        <el-input v-model="form.userPcPost" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.userPost" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
                     <el-form-item label="邮箱" :label-width="formLabelWidth">
-                        <el-input v-model="form.userPcEmail" autocomplete="off" style="width:500px"></el-input>
+                        <el-input v-model="form.userEmail" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
-                    <el-form-item label="手机号码" :label-width="formLabelWidth" prop="userPcTel">
-                        <el-input v-model="form.userPcTel" autocomplete="off" style="width:500px"></el-input>
+                    <el-form-item label="手机号码" :label-width="formLabelWidth" prop="userTel">
+                        <el-input v-model="form.userTel" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
-                    <el-form-item label="身份证号码" :label-width="formLabelWidth" prop="userPcIdCard">
-                        <el-input v-model="form.userPcIdCard" autocomplete="off" style="width:500px"></el-input>
+                    <el-form-item label="身份证号码" :label-width="formLabelWidth" prop="userIdCard">
+                        <el-input v-model="form.userIdCard" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
-                    <el-form-item label="用户类型" :label-width="formLabelWidth" prop="userPcType">
-                        <el-select v-model="form.userPcType" placeholder="请选择用户类型" style="width:300px">
+                    <el-form-item label="用户类型" :label-width="formLabelWidth" prop="userType">
+                        <el-select v-model="form.userType" placeholder="请选择用户类型" style="width:83%">
                             <el-option
                                     v-for="item in userPcTypeList"
                                     :key="item.value"
@@ -57,7 +57,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="角色类型" :label-width="formLabelWidth">
-                        <el-select v-model="form.roleId" multiple placeholder="请选择用户角色" style="width:300px">
+                        <el-select v-model="form.roleId" multiple placeholder="请选择用户角色" style="width:83%">
                             <el-option
                                     v-for="(item,index) in roleList"
                                     :key="index"
@@ -75,14 +75,19 @@
                                 :props="{ multiple: true, checkStrictly: true }"
                                 @change="handleChange"></el-cascader>
                     </el-form-item>
-                    <el-form-item label="生成APP账号" :label-width="formLabelWidth" prop="isApp">
-                        <el-switch
-                                v-model="form.isApp"
-                                :active-value="1"
-                                :inactive-value="0"
-                                active-color="#13ce66"
-                                inactive-color="#ff4949">
-                        </el-switch>
+                    <el-form-item label="头像" :label-width="formLabelWidth" prop="projectIcon">
+                        <el-upload
+                                class="upload-demo"
+                                action="http://jasobim.com:8085/api/files/uploadFiles"
+                                :on-success="returnList"
+                                name="file"
+                                v-model="form.userIcon"
+                                auto-upload
+                                list-type="picture"
+                                :file-list="fileList"
+                                multiple>
+                            <el-button size="small" type="primary">点击上传</el-button>
+                        </el-upload>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -103,30 +108,30 @@
                     width="55">
             </el-table-column>
             <el-table-column
-                    prop="pcUserName"
+                    prop="userName"
                     label="用户名">
             </el-table-column>
             <el-table-column
-                    prop="userPcRealName"
+                    prop="userRealName"
                     label="真实姓名">
             </el-table-column>
             <el-table-column
-                    prop="userPcTel"
+                    prop="userTel"
                     label="手机号码">
             </el-table-column>
             <el-table-column
-                    prop="userPcAge"
+                    prop="userAge"
                     label="年龄">
             </el-table-column>
             <el-table-column
-                    prop="userPcSex"
+                    prop="userSex"
                     label="性别">
                 <template slot-scope="scope">
                    {{scope.row.userPcSex=== 1 ? '男' : '女'}}
                 </template>
             </el-table-column>
             <el-table-column
-                    prop="userPcPost"
+                    prop="userPost"
                     label="职称">
             </el-table-column>
       <!--      <el-table-column
@@ -174,6 +179,7 @@
 <script >
     import util from  '../../common/js/util';
     var pageParams = {page: {pageSize: 10, pageNo: 1}}
+    var filePath="http://jasobim.com:8085/";
     export default {
 
         data() {
@@ -191,7 +197,7 @@
                 console.log(value, this.form.againPassword)
                 if (value === '') {
                     callback(new Error('请再次输入密码'));
-                } else if (value !== this.form.pcPassword) {
+                } else if (value !== this.form.password) {
                     callback(new Error('两次输入密码不一致!'));
                 } else {
                     callback();
@@ -199,11 +205,11 @@
             };
             return {
                 rules: {
-                    pcPassword: [{ validator: validatePass, trigger: 'blur' }],
+                    password: [{ validator: validatePass, trigger: 'blur' }],
                     againPassword: [{ validator: validatePass2, trigger: 'blur' }],
-                    pcUserName:[{ required: true, message: '用户名不能为空', trigger: 'blur' }],
-                    userPcIdCard:[{required: true, trigger: 'blur', ...util.rules.idcard}],
-                    userPcTel :[{required: true,  trigger: 'blur', ...util.rules.cellphone}],
+                    userName:[{ required: true, message: '用户名不能为空', trigger: 'blur' }],
+                    userIdCard:[{required: true, trigger: 'blur', ...util.rules.idcard}],
+                    userTel :[{required: true,  trigger: 'blur', ...util.rules.cellphone}],
                     //departmentId :[{ type: 'array', required: true, message: '部门不能为空', trigger: 'change' }],
                     //userPcType: [{required: true,type: 'array', message: '用户类型不能为空', trigger: 'change' }]
                 },
@@ -212,34 +218,37 @@
                 dialogFormVisible: false,
                 departmentOptions:[],
                 form: {
-                    pcUserName: '',
-                    userPcTel: '',
-                    userPcRealName: '',
-                    userPcType: [],
-                    pcPassword: '',
+                    userName: '',
+                    userTel: '',
+                    userRealName: '',
+                    userType: [],
+                    password: '',
                     againPassword:'',
-                    userPcEmail:'',
-                    userPcPost: '',
-                    userPcIcon: '',
-                    userPcIdCard: '',
+                    userEmail:'',
+                    userPost: '',
+                    userIcon: '',
+                    userIdCard: '',
                     departmentTree: [],
                     roleId: [],
-                    isApp: 0
+                    isApp:''
                 },
+                fileList:[],
                 userRoles:[{}],
                 userPcTypeList:[
-                    {name:'公司管理人员',value: 0},
-                    {name:'项目人员',value: 1}
+                    {name:'公司管理人员',value: 1},
+                    {name:'项目管理人员',value: 2},
+                    {name:'项目工人',value: 3}
                 ],
+               
                 formLabelWidth: '120px',
             //////////////////////////
                 /*选中删除*/
                 multipleSelection: [],
                 search:{
-                    pcUserName: null,
-                    userPcTel:null,
-                    userPcRealName:null,
-                    userPcType:null
+                    userName: null,
+                    userTel:null,
+                    userRealName:null,
+                    userType:null
                 },
                 roleList: [],
                 page: {
@@ -258,6 +267,9 @@
             }
         },
         methods: {
+             returnList(response, file, fileList){
+                this.form.userIcon=response.data[0];
+            },	
             handleChange(value) {
                 console.log(value);
             },
@@ -309,6 +321,7 @@
             updateUserPc(row){
                 this.form = Object.assign({}, row);
                 this.form.againPassword=this.form.pcPassword;
+                this.fileList.push({url:filePath+this.form.userIcon});
                 //获取用户详情
                 this.getUserPcDetail(row);
                 //获取用户的组织架构
@@ -380,7 +393,7 @@
 
             ///初始化
             initDatas(){
-                this.api.callApi('/UserPc/select',{
+                this.api.callApi('/JasoUser/select',{
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo
@@ -394,7 +407,7 @@
             },
             searchUser(){
                 debugger
-                this.api.callApi('/UserPc/select',{
+                this.api.callApi('/JasoUser/select',{
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo

@@ -7,6 +7,14 @@ function padding(s, len) {
 };
 
 export default {
+    checkProject(_this) {
+        if(!sessionStorage.getItem("projectId")){
+            debugger
+            _this.$message.info("请先选择项目");
+            return false;
+        }
+        return true;
+    },
     rules: {
         cellphone: { message: '请检查手机号码', pattern: /^1\d{1}[0-9]\d{4,8}$/ },
         //telphone number

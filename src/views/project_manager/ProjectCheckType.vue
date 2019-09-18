@@ -1,9 +1,29 @@
 <template>
     <div>
-        <el-dialog title="角色新增" :visible.sync="dialogFormVisible" width="40%">
+        <el-input v-model="search.checkName" placeholder="请输入检查项名称" style="width: 180px; margin:10px 5px;  " ></el-input>
+        <el-select v-model="search.checkType" placeholder="请选择类型" style="width: 180px; margin:10px 5px;  ">
+            <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.name"
+                    :value="item.value">
+            </el-option>
+        </el-select>
+        <el-button type="primary" style="margin:10px 5px; " @click="searchProjectCheckType">搜索</el-button>
+        <el-dialog title="检查项新增" :visible.sync="dialogFormVisible" width="40%">
             <el-form :model="form" status-icon ref="form">
-                <el-form-item label="角色名称" :label-width="formLabelWidth" prop="roleName">
-                    <el-input v-model="form.roleName" autocomplete="off" style="width:83%"></el-input>
+                <el-form-item label="检查项名称" :label-width="formLabelWidth" prop="checkName">
+                    <el-input v-model="form.checkName" autocomplete="off" style="width:83%"></el-input>
+                </el-form-item>
+                <el-form-item label="类型" :label-width="formLabelWidth" prop="checkType">
+                    <el-select v-model="form.checkType" placeholder="请选择类型" style="width:83%">
+                        <el-option
+                                v-for="item in options"
+                                :key="item.value"
+                                :label="item.name"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -15,25 +35,6 @@
         <el-button type="primary" style="margin:10px 30px;float:right; " @click="openAddPage">新增</el-button>
         <!-- 新增弹出框底层 -->
         <el-button type="danger" @click="deleteSelect" style="margin:10px 5px; float:right;">删除选中</el-button>
-        <el-dialog title="权限分配" :visible.sync="dialogFormVisibleTree" width="40%" @opened="dialogOpen">
-            <el-form :model="treeForm" status-icon >
-                <el-tree
-                        v-model="treeForm.menuId"
-                        :data="menuTree"
-                        show-checkbox
-                        ref="treeForm"
-                        node-key="value"
-                        default-expand-all
-                        :props="defaultProps">
-                </el-tree>
-                <el-input v-model="treeForm.roleId" autocomplete="off" style="display:none;"></el-input>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="resetTreeForm('treeForm')">取 消</el-button>
-                <el-button type="primary" @click="submitTree('treeForm')">保存</el-button>
-            </div>
-
-        </el-dialog>
         <el-table
                 :data="tableData"
                 style="width: 100%"
@@ -44,21 +45,23 @@
                     width="55">
             </el-table-column>
             <el-table-column
-                    prop="roleName"
-                    label="角色名称">
+                    prop="checkName"
+                    label="检查项名称">
             </el-table-column>
             <el-table-column
-                    prop="createTime"
-                    label="创建时间"
-                    :formatter="formatDate"
-                    show-overflow-tooltip>
+                    prop="checkType"
+                    label="检查项类型">
+                <template slot-scope="scope">
+                    <template>
+                        {{optionsList[scope.row.checkType-1]}}
+                    </template>
+                </template>
             </el-table-column>
             <el-table-column
                     label="操作">
                 <template slot-scope="scope">
-                    <el-button type="text" @click="updateRole(scope.row)">编辑</el-button>
+                    <el-button type="text" @click="updateCheckType(scope.row)">编辑</el-button>
                     <el-button type="text" style="color:red;" @click="deleteSelects(scope.row)">删除</el-button>
-                    <el-button type="text" style="color:#7fff40;" @click="roleEdit(scope.row)">权限分配</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -75,16 +78,13 @@
         </div>
     </div>
 </template>
+
 <script>
     var pageParams = {page: {pageSize: 10, pageNo: 1}}
     export default {
+
         data() {
             return {
-                menuTree: [],
-                defaultProps: {
-                    children: 'children',
-                    label: 'label'
-                },
                 page: {
                     currentPage: 1,
                     pageSize: 10,
@@ -94,14 +94,21 @@
                 /*新增弹出框操作*/
                 dialogTableVisible: false,
                 dialogFormVisible: false,
-                dialogFormVisibleTree: false,
+                options:[
+                    {"value":1,"name":"实测实量"},
+                    {"value":2,"name":"质量管理"},
+                    {"value":3,"name":"安全管理"}],
+                optionsList:[
+                "实测实量",
+                "质量管理",
+                "安全管理"],
                 form: {
-                    roleName: '',
-                    companyId:''
+                    checkName: '',
+                    checkType: ''
                 },
-                treeForm: {
-                    menuId: [],
-                    roleId: []
+                search: {
+                    checkName: '',
+                    checkType: ''
                 },
                 formLabelWidth: '120px',
                 //////////////////////////
@@ -110,64 +117,23 @@
             }
         },
         methods: {
-            //权限分配页面
-            formatDate(row, column) {
-                let date = new Date(parseInt(row.createTime));
-                return this.api.formatDate(date);
-            },
-            getMenuTreeList(){
-              this.api.selectMenuTree().then(res =>{
-                  debugger
-                  this.menuTree=res.data;
-              }).catch(res =>{
-                  this.$message.error(res.message);
-              });
-            },
-            dialogOpen() {
-                debugger
-                this.$refs.treeForm.setCheckedKeys([]);
-                //this.treeForm.roleId=['1'];
-                debugger
-                this.treeForm.roleId=this.tempRow.roleId;
-                this.api.selectRoleMenuList(this.tempRow).then(res =>{
-                    debugger
-                    let menuIds=[];
-                    for(let i=0;i<res.data.length;i++){
-                        menuIds[i]=res.data[i].menuId;
-                    }
-                    this.$refs.treeForm.setCheckedKeys(menuIds);
-                }).catch(res =>{
-                });
-            },
-            roleEdit(row){
-                this.tempRow = row
-                this.dialogFormVisibleTree = true;
-
-            },
-            getDetailInfo(row){
-
-            },
-            resetTreeForm(form){
-                this.dialogFormVisibleTree = false;
-                this.treeForm={};
-            },
-            submitTree(form){
-                debugger
-                this.treeForm.menuId=this.$refs.treeForm.getCheckedKeys();
-                this.api.roleSetting(this.treeForm).then(res =>{
-                    this.dialogFormVisibleTree = false;
-                }).catch(res =>{
+            //搜索
+            searchProjectCheckType(){
+                this.api.getProjectCheckTypeList({
+                    'pageVo':{
+                        "pageSize": pageParams.page.pageSize,
+                        "pageNo": pageParams.page.pageNo
+                    },
+                    ...this.search
+                }).then(res => {
+                    this.tableData=res.data.data;
+                    this.page.total=res.data.page.total;
+                }).catch(res => {
 
                 });
-
             },
-            //新增页面取消按钮
             //新增页面
             openAddPage(){
-                this.dialogFormVisible = true;
-            },
-            updateRole(row){
-                this.form = Object.assign({}, row);
                 this.dialogFormVisible = true;
             },
             resetForm(form) {
@@ -175,11 +141,14 @@
                 this.$refs[form].resetFields();*/
                 this.dialogFormVisible = false;
             },
+            updateCheckType(row){
+                //编辑页面
+                this.form = Object.assign({}, row);
+                this.dialogFormVisible = true;
+            },
             //提交
             submit(form){
-                var userInfo = JSON.parse(sessionStorage.getItem("user"))
-                this.form.companyId=userInfo.companyId;
-                this.api.addRole(this.form).then(res =>{
+                this.api.addProjectCheckType(this.form).then(res =>{
                     this.initDatas();
                     this.dialogFormVisible = false;
                     this.$message.success(res.message);
@@ -189,7 +158,7 @@
             },
             //删除选中
             deleteSelect(row){
-                this.api.deleteRole(this.multipleSelection).then( res =>{
+                this.api.deleteProjectCheckTypeList(this.multipleSelection).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -198,7 +167,7 @@
             },
             //删除按钮
             deleteSelects(row){
-                this.api.deleteRole([row]).then( res =>{
+                this.api.deleteProjectCheckTypeList([row]).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -209,13 +178,12 @@
                 this.multipleSelection = val;
             },
             initDatas(){
-                this.api.getRolePageList({
+                this.api.getProjectCheckTypeList({
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo
                     }
                 }).then(res => {
-                    debugger
                     this.tableData=res.data.data;
                     this.page.total=res.data.page.total;
                 }).catch(res => {
@@ -243,7 +211,6 @@
         },
         mounted() {
             this.initDatas();
-            this.getMenuTreeList();
         }
     }
 </script>

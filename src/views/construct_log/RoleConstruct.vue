@@ -1,9 +1,26 @@
 <template>
     <div>
-        <el-dialog title="角色新增" :visible.sync="dialogFormVisible" width="40%">
+        <el-dialog title="工种权限新增" :visible.sync="dialogFormVisible" width="40%">
             <el-form :model="form" status-icon ref="form">
-                <el-form-item label="角色名称" :label-width="formLabelWidth" prop="roleName">
-                    <el-input v-model="form.roleName" autocomplete="off" style="width:83%"></el-input>
+                <el-form-item label="工种类型" :label-width="formLabelWidth" prop="teamsName">
+                    <el-select v-model="form.roleType" placeholder="请选择工种" style="width:83%">
+                        <el-option
+                                v-for="item in jobType"
+                                :key="item.value"
+                                :label="item.name"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="所属部门" :label-width="formLabelWidth" prop="roleId">
+                     <el-cascader
+                            expand-trigger="hover"
+                            placeholder="部门选择"
+                            class="selectWidth"
+                            :options="departmentTree"
+                            v-model="form.departmentId"
+                            >
+                    </el-cascader>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -15,25 +32,6 @@
         <el-button type="primary" style="margin:10px 30px;float:right; " @click="openAddPage">新增</el-button>
         <!-- 新增弹出框底层 -->
         <el-button type="danger" @click="deleteSelect" style="margin:10px 5px; float:right;">删除选中</el-button>
-        <el-dialog title="权限分配" :visible.sync="dialogFormVisibleTree" width="40%" @opened="dialogOpen">
-            <el-form :model="treeForm" status-icon >
-                <el-tree
-                        v-model="treeForm.menuId"
-                        :data="menuTree"
-                        show-checkbox
-                        ref="treeForm"
-                        node-key="value"
-                        default-expand-all
-                        :props="defaultProps">
-                </el-tree>
-                <el-input v-model="treeForm.roleId" autocomplete="off" style="display:none;"></el-input>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="resetTreeForm('treeForm')">取 消</el-button>
-                <el-button type="primary" @click="submitTree('treeForm')">保存</el-button>
-            </div>
-
-        </el-dialog>
         <el-table
                 :data="tableData"
                 style="width: 100%"
@@ -44,21 +42,27 @@
                     width="55">
             </el-table-column>
             <el-table-column
-                    prop="roleName"
-                    label="角色名称">
+                    prop="roleType"
+                    label="工种类型">
+                <template slot-scope="scope">
+                    <template>
+                        {{jobType[scope.row.roleType-1].name}}
+                    </template>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    prop="departmentName"
+                    label="工种职称">
             </el-table-column>
             <el-table-column
                     prop="createTime"
                     label="创建时间"
-                    :formatter="formatDate"
                     show-overflow-tooltip>
             </el-table-column>
             <el-table-column
                     label="操作">
                 <template slot-scope="scope">
-                    <el-button type="text" @click="updateRole(scope.row)">编辑</el-button>
                     <el-button type="text" style="color:red;" @click="deleteSelects(scope.row)">删除</el-button>
-                    <el-button type="text" style="color:#7fff40;" @click="roleEdit(scope.row)">权限分配</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -75,16 +79,14 @@
         </div>
     </div>
 </template>
+
 <script>
-    var pageParams = {page: {pageSize: 10, pageNo: 1}}
+    let pageParams = {page: {pageSize: 10, pageNo: 1}}
+    let userInfo = JSON.parse(sessionStorage.getItem("user"));
     export default {
+
         data() {
             return {
-                menuTree: [],
-                defaultProps: {
-                    children: 'children',
-                    label: 'label'
-                },
                 page: {
                     currentPage: 1,
                     pageSize: 10,
@@ -94,80 +96,50 @@
                 /*新增弹出框操作*/
                 dialogTableVisible: false,
                 dialogFormVisible: false,
-                dialogFormVisibleTree: false,
+                departmentTree: [],
                 form: {
-                    roleName: '',
-                    companyId:''
-                },
-                treeForm: {
-                    menuId: [],
-                    roleId: []
+                    roleType: [],
+                    constructContentId:[],
+                    companyId:'',
+                    roleId:''
                 },
                 formLabelWidth: '120px',
+                roleList:[],
                 //////////////////////////
                 /*选中删除*/
-                multipleSelection: []
+                multipleSelection: [],
+                /*1、工人 2、施工员 3、班组长 4、其他*/
+                jobType: [
+                    {
+                        value: '1',
+                        name: '工人'
+                    },
+                    {
+                        value: '2',
+                        name: '施工员'
+                    },
+                    {
+                        value: '3',
+                        name: '班组长'
+                    },
+                    {
+                        value: '4',
+                        name: '其他'
+                    }]
             }
         },
         methods: {
-            //权限分配页面
-            formatDate(row, column) {
-                let date = new Date(parseInt(row.createTime));
-                return this.api.formatDate(date);
-            },
-            getMenuTreeList(){
-              this.api.selectMenuTree().then(res =>{
-                  debugger
-                  this.menuTree=res.data;
-              }).catch(res =>{
-                  this.$message.error(res.message);
-              });
-            },
-            dialogOpen() {
-                debugger
-                this.$refs.treeForm.setCheckedKeys([]);
-                //this.treeForm.roleId=['1'];
-                debugger
-                this.treeForm.roleId=this.tempRow.roleId;
-                this.api.selectRoleMenuList(this.tempRow).then(res =>{
-                    debugger
-                    let menuIds=[];
-                    for(let i=0;i<res.data.length;i++){
-                        menuIds[i]=res.data[i].menuId;
-                    }
-                    this.$refs.treeForm.setCheckedKeys(menuIds);
+            //部门（组织架构）Tree获取
+            getDepartmentTree(){
+                this.api.getUserPcDepartmentTreeList().then( res =>{
+                    this.departmentTree=res.data;
                 }).catch(res =>{
+                    this.$message.error(res.message);
                 });
             },
-            roleEdit(row){
-                this.tempRow = row
-                this.dialogFormVisibleTree = true;
-
-            },
-            getDetailInfo(row){
-
-            },
-            resetTreeForm(form){
-                this.dialogFormVisibleTree = false;
-                this.treeForm={};
-            },
-            submitTree(form){
-                debugger
-                this.treeForm.menuId=this.$refs.treeForm.getCheckedKeys();
-                this.api.roleSetting(this.treeForm).then(res =>{
-                    this.dialogFormVisibleTree = false;
-                }).catch(res =>{
-
-                });
-
-            },
-            //新增页面取消按钮
+            
             //新增页面
             openAddPage(){
-                this.dialogFormVisible = true;
-            },
-            updateRole(row){
-                this.form = Object.assign({}, row);
                 this.dialogFormVisible = true;
             },
             resetForm(form) {
@@ -177,9 +149,9 @@
             },
             //提交
             submit(form){
-                var userInfo = JSON.parse(sessionStorage.getItem("user"))
                 this.form.companyId=userInfo.companyId;
-                this.api.addRole(this.form).then(res =>{
+                debugger
+                this.api.addOrUpdateRoleConstruct(this.form).then(res =>{
                     this.initDatas();
                     this.dialogFormVisible = false;
                     this.$message.success(res.message);
@@ -189,7 +161,7 @@
             },
             //删除选中
             deleteSelect(row){
-                this.api.deleteRole(this.multipleSelection).then( res =>{
+                this.api.deleteRoleConstructList(this.multipleSelection).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -198,7 +170,7 @@
             },
             //删除按钮
             deleteSelects(row){
-                this.api.deleteRole([row]).then( res =>{
+                this.api.deleteRoleConstructList([row]).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -209,7 +181,8 @@
                 this.multipleSelection = val;
             },
             initDatas(){
-                this.api.getRolePageList({
+                this.api.getRoleConstructList({
+                    "companyId":userInfo.companyId,
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo
@@ -239,11 +212,17 @@
                 pageParams.page.pageNo = val
                 this.initDatas()
                 console.log(`当前页: ${val}`);
+            },
+            getConstructContentTreeList(){
+                this.api.getConstructContentTree({ "companyId":userInfo.companyId}).then(res =>{
+                    this.constructContentOptions=res.data;
+                })
             }
         },
         mounted() {
             this.initDatas();
-            this.getMenuTreeList();
+            this.getConstructContentTreeList();
+            this.getDepartmentTree();
         }
     }
 </script>
