@@ -103,20 +103,18 @@
                     <el-form ref="dialogProductionForm" :model="productionFormList">
                         <div>
                             <div class="block threeTableDiv_select" style="margin-left:50px;">
-                                <el-date-picker
-                                        v-model="productionFormList.productionStartTime"
-                                        class="selectWidth"
-                                        type="date"
-                                        placeholder="开始时间">
-                                </el-date-picker>
+                                <el-time-select
+                                v-model="productionFormList.productionStartTime"
+                                 class="selectWidth3"
+                                placeholder="开始时间">
+                                </el-time-select>
                             </div>
                             <div class="block threeTableDiv_select">
-                                <el-date-picker
-                                        v-model="productionFormList.productionEndTime"
-                                        class="selectWidth"
-                                        type="date"
-                                        placeholder="结束时间">
-                                </el-date-picker>
+                                <el-time-select
+                                v-model="productionFormList.productionEndTime"
+                                class="selectWidth3"
+                                placeholder="结束时间">
+                                </el-time-select>
                             </div>
                             <div class="threeTableDiv_select">
                                 <el-form-item prop="productionConstructParts">
@@ -234,20 +232,18 @@
                     <el-form ref="dialogConstructProgressForm" :model="constructProgressFormList">
                         <div class="threeTableDiv_select">
                             <div class="block threeTableDiv_select" style="margin-left:50px;">
-                                <el-date-picker
-                                        v-model="constructProgressFormList.constructProgressStartTime"
-                                        class="selectWidth3"
-                                        type="date"
-                                        placeholder="开始时间">
-                                </el-date-picker>
+                                 <el-time-select
+                                v-model="constructProgressFormList.constructProgressStartTime"
+                                class="selectWidth3"
+                                placeholder="开始时间">
+                                </el-time-select>
                             </div>
                             <div class="block threeTableDiv_select">
-                                <el-date-picker
-                                        v-model="constructProgressFormList.constructProgressEndTime"
-                                        class="selectWidth3"
-                                        type="date"
-                                        placeholder="结束时间">
-                                </el-date-picker>
+                                 <el-time-select
+                                v-model="constructProgressFormList.constructProgressEndTime"
+                                class="selectWidth3"
+                                placeholder="结束时间">
+                                </el-time-select>
                             </div>
                             <div class="threeTableDiv_select">
                                 <el-form-item prop="projectBuildingId">

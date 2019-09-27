@@ -321,11 +321,11 @@
                 tableData: [],
                 actionStatus: 'edit',
                 /*新增弹出框操作*/
-                dialogProcessVisible:false,//整改进度
-                dialogAcceptVisible:false,//接受
                 dialogTableVisible: false,
                 dialogFormVisible: false,
                 dialogTypeFormVisible:false,
+                dialogProcessVisible:false,//整改进度
+                dialogAcceptVisible:false,//接受
                 dialogCheckVisible:false,//验收
                 dialogMeasureProblemVisible:false,//整改指派
                 options:[
