@@ -150,7 +150,8 @@
                     <el-table-column
                             prop="createTime"
                             label="创建时间"
-                            show-overflow-tooltip>
+                            show-overflow-tooltip
+                            :formatter="formatDate">
                     </el-table-column>
                     <el-table-column
                             label="操作">
@@ -235,7 +236,8 @@
                     <el-table-column
                             prop="createTime"
                             label="创建时间"
-                            show-overflow-tooltip>
+                            show-overflow-tooltip
+                            :formatter="formatDate">
                     </el-table-column>
                     <el-table-column
                             label="操作">
@@ -477,6 +479,10 @@
                 }).catch(res => {
 
                 });
+            },
+             formatDate(row, column) {
+            let date = new Date(parseInt(row.createTime));
+            return this.api.formatDate(date);
             },
             selectMaterialTypeList(){
                 this.api.selectMaterialTypeList({

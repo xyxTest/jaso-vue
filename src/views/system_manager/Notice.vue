@@ -1,26 +1,23 @@
 <template>
     <div>
-        <el-dialog title="新闻资讯新增" :visible.sync="dialogFormVisible" width="40%">
+        <el-dialog title="公告新增" :visible.sync="dialogFormVisible" width="40%">
             <el-form :model="form" status-icon ref="form">
-                <el-form-item label="标题" :label-width="formLabelWidth" prop="topic">
-                    <el-input v-model="form.topic" autocomplete="off" style="width:83%"></el-input>
+                <el-form-item label="标题" :label-width="formLabelWidth" prop="title">
+                    <el-input v-model="form.title" autocomplete="off" style="width:83%"></el-input>
                 </el-form-item>
                 <el-form-item label="内容" :label-width="formLabelWidth" prop="content">
-                    <el-input type="textarea" v-model="form.content" autocomplete="off" style="width:83%"></el-input>
+                    <el-input v-model="form.content" autocomplete="off" style="width:83%"></el-input>
                 </el-form-item>
-                <el-form-item label="图片" :label-width="formLabelWidth" prop="remark">
-                    <el-input v-model="form.remark" autocomplete="off" style="width:83%"></el-input>
-                </el-form-item>
-                <el-form-item label="类型" :label-width="formLabelWidth" prop="readStatus">
-                    <el-select v-model="form.readStatus" placeholder="请选择类型" style="width:83%">
+                <el-form-item label="推送人员" :label-width="formLabelWidth" prop="userIdList">
+                    <el-select v-model="form.userIdList" multiple placeholder="请选择推送人员">
                         <el-option
-                                v-for="item in options"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
+                        v-for="item in userList"
+                        :key="item.jasoUserId"
+                        :label="item.userRealName"
+                        :value="item.jasoUserId">
                         </el-option>
                     </el-select>
-                 </el-form-item>
+                </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="resetForm('form')">取 消</el-button>
@@ -41,29 +38,12 @@
                     width="55">
             </el-table-column>
              <el-table-column
-                    prop="userRealName"
-                    label="创建人姓名">
+                    prop="title"
+                    label="标题">
             </el-table-column>
             <el-table-column
                     prop="content"
                     label="内容">
-            </el-table-column>
-            <el-table-column
-                    prop="topic"
-                    label="标题">
-            </el-table-column>
-            <el-table-column
-                    prop="readNum"
-                    label="已读数量">
-            </el-table-column>
-             <el-table-column
-                    prop="readStatus"
-                    label="类型">
-                <template slot-scope="scope">
-                    <template>
-                        {{options[scope.row.readStatus-1].label}}
-                    </template>
-                </template>
             </el-table-column>
             <el-table-column
                     prop="createTime"
@@ -74,7 +54,7 @@
             <el-table-column
                     label="操作">
                 <template slot-scope="scope">
-                    <el-button type="text" @click="updateNewsInfo(scope.row)">编辑</el-button>
+                    <el-button type="text" @click="updateNotice(scope.row)">编辑</el-button>
                     <el-button type="text" style="color:red;" @click="deleteSelects(scope.row)">删除</el-button>
                 </template>
             </el-table-column>
@@ -99,16 +79,6 @@
 
         data() {
             return {
-                options: [{
-                    value: 1,
-                    label: '一般'
-                }, {
-                    value: 2,
-                    label: '热门'
-                }, {
-                    value: 3,
-                    label: '置顶'
-                }],
                 page: {
                     currentPage: 1,
                     pageSize: 10,
@@ -120,11 +90,10 @@
                 dialogFormVisible: false,
                 form: {
                     content: '',
-                    topic:'',
-                    readStatus:'',
-                    readNum:0,
-                    remark:''
+                    title:'',
+                    userIdList:[]
                 },
+                userList:[],
                 formLabelWidth: '120px',
                 //////////////////////////
                 /*选中删除*/
@@ -138,19 +107,28 @@
             },
             //新增页面
             openAddPage(){
+                this.getAllUserList();
                 this.dialogFormVisible = true;
             },
             resetForm(form) {
                 this.dialogFormVisible = false;
             },
-            updateNewsInfo(row){
+            updateNotice(row){
                 //编辑页面
                 this.form = Object.assign({}, row);
                 this.dialogFormVisible = true;
             },
+            //获取用户列表
+            getAllUserList(){
+                 this.api.getAllUserList().then( res =>{
+                    this.userList=res.data;
+                }).catch(res =>{
+                    this.$message.error(res.message);
+                });
+            },
             //提交
             submit(form){
-                this.api.addNewsInfo(this.form).then(res =>{
+                this.api.addNotice(this.form).then(res =>{
                     this.initDatas();
                     this.dialogFormVisible = false;
                     this.$message.success(res.message);
@@ -160,7 +138,7 @@
             },
             //删除选中
             deleteSelect(row){
-                this.api.deleteNewsInfoList(this.multipleSelection).then( res =>{
+                this.api.deleteNotice(this.multipleSelection).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -169,7 +147,7 @@
             },
             //删除按钮
             deleteSelects(row){
-                this.api.deleteNewsInfoList([row]).then( res =>{
+                this.api.deleteNotice([row]).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -181,7 +159,7 @@
             },
            
             initDatas(){
-                this.api.getNewsInfoList({
+                this.api.getNoticeList({
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo

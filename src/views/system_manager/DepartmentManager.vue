@@ -348,7 +348,7 @@
             this.initDatas();
             this.getUserPcDepartmetTree();
             this.getDepartmentList();
-           // this.getProjectList();
+            this.getProjectList();
         }
     }
 </script>

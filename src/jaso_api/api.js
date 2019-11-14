@@ -17,14 +17,6 @@ class Api {
     deleteUserPc(params){
         return callApi('/JasoUser/delete',params);
     }
-    /*用户角色List加载*/
-    getRoleList(params){
-        return callApi('/Role/selectList',params);
-    }
-    /*获取all用户角色*/
-    getAllRoleList(params){
-        return callApi('/Role/selectList',params);
-    }
     /*用户详情加载(用户角色)*/
     getUserPcDetail(params){
         return callApi('/JasoUser/selectDetail',params);
@@ -39,6 +31,10 @@ class Api {
     /*组织架构列表加载*/
     getDepartmentList(params){
         return callApi('/Department/select',params);
+    }
+    //获取所有用户
+    selectAllUserList(params){
+        return callApi('/JasoUser/selectList',params);
     }
     //图片轮播管理
     /*列表获取*/
@@ -104,26 +100,7 @@ class Api {
     selectProjectLists(params){
         return callApi('/Project/selectList',params);
     }
-    //角色管理控制器
-    /*列表获取*/
-    getRolePageList(params){
-        return callApi( '/Role/select', params);
-    }
-    addRole(params){
-        return callApi('/Role/add',params);
-    }
-    deleteRole(params){
-        return callApi('/Role/delete',params);
-    }
-    updateRole(params){
-        return callApi('/Role/update',params);
-    }
-    roleSetting(params){
-        return callApi('/Role/roleSet',params);
-    }
-    selectRoleMenuList(params){
-        return callApi('/Role/selectRoleMenuList',params);
-    }
+   
     //菜单管理制器
     /*列表获取*/
     getMenuList(params){
@@ -434,6 +411,70 @@ class Api {
     }
     getConstructContentTree(params){
         return callApi('/ConstructContent/selectTree',params);
+    }
+    ///工种管理
+    /*工种列表分页获取*/
+    getWorkTypePageList(params){
+        return callApi('/WorkType/select',params);
+    }
+    /*工种新增*/
+    addWorkType(params){
+        return callApi('/WorkType/add',params)
+    }
+    deleteWorkType(params){
+        return callApi('/WorkType/delete',params);
+    }
+    ///角色管理
+    /*角色类型新增*/
+    addRole(params){
+        return callApi('/Role/add',params);
+    }
+    /*分页查询*/
+    getRoleList(params){
+        return callApi('/Role/select',params);
+    }
+    /*all查询*/
+    getAllRoleList(params){
+        return callApi('/Role/selectList',params);
+    }
+    /*根据用户id查询所选角色*/
+    getRoleListByUserId(params){
+        return callApi('/JasoUser/getRoleListByUserId',params);
+    }
+    /*用户新增页面通过工种搜索角色*/
+    getWorkTypeListByRoleId(params){
+        return callApi('/WorkType/selectByRoleIds',params)
+    }
+    //权限设置
+    roleSetting(params){
+        return callApi('/Role/roleSet',params);
+    }
+    selectAllMenuList(params){
+        return callApi('/Menu/selectAllList',params);
+    }
+    selectRoleMenuList(params){
+        return callApi('/Role/selectRoleMenuList',params);
+    }
+    /////公告管理
+    /*公告添加*/
+    addNotice(params){
+        return callApi('/Notice/add',params);
+    }
+    /*公告删除*/
+    deleteNotice(params){
+        return callApi('/Notice/delete',params);
+    }
+    /*列表获取*/
+    getNoticeList(params){
+        return callApi('/Notice/select',params);
+    }
+    /** 用户列表获取*/
+    getAllUserList(params){
+        return callApi('/JasoUser/selectList',params);
+    }
+    /** 获取用户选中的项目列表*/
+    getProjectListByUser(params){
+        return callApi('/UserProject/selectProjectList',params);
     }
     formatDate(date) {
          let Y = date.getFullYear() + '-';

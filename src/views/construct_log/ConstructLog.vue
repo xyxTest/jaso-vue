@@ -685,9 +685,12 @@
                     axios.get('https://restapi.amap.com/v3/weather/weatherInfo', {
                         params:{
                         "city":cityCode,
-                        "key":"8fd4655c8ad5b554912b1aa8c6ab1e89"}
+                        "key":"8fd4655c8ad5b554912b1aa8c6ab1e89",
+                        "extensions": 'all'}
                     }).then( (response) => {
-                        this.form.weather=response.data.lives[0].weather+" "+response.data.lives[0].temperature+"℃"+" "+response.data.lives[0].winddirection+"风"+response.data.lives[0].windpower+"级"
+                        debugger
+                        this.form.weather=response.data.forecasts[0].casts[0].dayweather+";"+response.data.forecasts[0].casts[0].daytemp+";"+response.data.forecasts[0].casts[0].daypower+";"
+                        +response.data.forecasts[0].casts[0].nightweather+";"+response.data.forecasts[0].casts[0].nighttemp+";"+response.data.forecasts[0].casts[0].nightpower;
                     }).catch(function (error) {
                         console.log(error);
                     });

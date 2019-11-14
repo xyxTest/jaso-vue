@@ -12,15 +12,15 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="所属部门" :label-width="formLabelWidth" prop="roleId">
-                     <el-cascader
-                            expand-trigger="hover"
-                            placeholder="部门选择"
-                            class="selectWidth"
-                            :options="departmentTree"
-                            v-model="form.departmentId"
-                            >
-                    </el-cascader>
+                <el-form-item label="工种类型" :label-width="formLabelWidth" prop="roleTypeId">
+                    <el-select v-model="form.roleTypeId" placeholder="请选择类型" style="width:83%">
+                        <el-option
+                                v-for="item in roleTypeList"
+                                :key="item.roleTypeId"
+                                :label="item.roleTypeName"
+                                :value="item.roleTypeId">
+                        </el-option>
+                    </el-select>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -51,13 +51,14 @@
                 </template>
             </el-table-column>
             <el-table-column
-                    prop="departmentName"
-                    label="工种职称">
+                    prop="roleTypeName"
+                    label="职称类型">
             </el-table-column>
             <el-table-column
                     prop="createTime"
                     label="创建时间"
-                    show-overflow-tooltip>
+                    show-overflow-tooltip
+                    :formatter="formatDate">
             </el-table-column>
             <el-table-column
                     label="操作">
@@ -105,6 +106,7 @@
                 },
                 formLabelWidth: '120px',
                 roleList:[],
+                roleTypeList:[],
                 //////////////////////////
                 /*选中删除*/
                 multipleSelection: [],
@@ -129,6 +131,10 @@
             }
         },
         methods: {
+            formatDate(row, column) {
+            let date = new Date(parseInt(row.createTime));
+            return this.api.formatDate(date);
+            },
             //部门（组织架构）Tree获取
             getDepartmentTree(){
                 this.api.getUserPcDepartmentTreeList().then( res =>{
@@ -157,6 +163,15 @@
                     this.$message.success(res.message);
                 }).catch(res =>{
                     this.$message.error(res.message);
+                });
+            },
+             //获取所有的用户角色类型
+            getallRoleTypeList(){
+                this.api.getAllRoleTypeList().then(res =>{
+                    debugger;
+                    this.roleTypeList = res.data;
+                }).catch(res =>{
+
                 });
             },
             //删除选中
@@ -222,6 +237,7 @@
         mounted() {
             this.initDatas();
             this.getConstructContentTreeList();
+            this.getallRoleTypeList();
             this.getDepartmentTree();
         }
     }

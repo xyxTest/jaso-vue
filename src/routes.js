@@ -5,7 +5,9 @@ import Home from './views/Home.vue'
 import Main from './views/Main.vue'
 import UserPcManager from './views/system_manager/UserPcManager.vue'
 import RoleManager from './views/system_manager/RoleManager.vue'
+import NoticeManager from './views/system_manager/Notice.vue'
 import MenuManager from './views/system_manager/MenuManager.vue'
+import WorkTypeManager from './views/system_manager/WorkTypeManager.vue'
 import DepartmentManager from './views/system_manager/DepartmentManager.vue'
 import ImageChangeManager from './views/system_manager/ImageChangeManager.vue'
 import FeedbackManager from './views/system_manager/FeedbackManager.vue'
@@ -34,7 +36,17 @@ import RoleConstruct from './views/construct_log/RoleConstruct';
 import ExistingProblem from "./views/construct_log/ExistingProblem";
 import Machinery from "./views/construct_log/Machinery";
 import SubjectMaterial from "./views/construct_log/SubjectMaterial";
-
+import ConstructionTask from "./views/construction_task/ConstructionTask.vue";
+import StudyData from "./views/studyData_manager/StudyData.vue";
+import StudyFile from "./views/studyData_manager/StudyFile.vue";
+import StudyEvent from "./views/studyData_manager/StudyEvent.vue";
+import StudyWorkerType from "./views/studyData_manager/StudyWorkerType.vue";
+import StudyPaper from "./views/studyData_manager/StudyPaper.vue";
+import StudyImage from "./views/studyData_manager/StudyImage.vue";
+import AttencePlace from "./views/attence_manager/AttencePlace.vue";
+import AttenceMode from "./views/attence_manager/AttenceMode.vue";
+import AttenceLog from "./views/attence_manager/AttenceLog.vue";
+import WorkTask from "./views/workthing_manager/WorkTask.vue";
 
 let routes = [
     {
@@ -64,9 +76,11 @@ let routes = [
             { path: '/pc_user_manager', component: UserPcManager, name: 'PC端用户管理' },
             { path: '/banner_manager', component: ImageChangeManager, name: '图片轮播管理' },
             { path: '/department_manager', component: DepartmentManager, name: '部门管理' },
-            { path: '/role_manager', component: RoleManager, name: '角色管理' },
+            { path: '/work_type_manager', component: WorkTypeManager, name: '工种管理' },
+            { path: '/role_manager', component: RoleManager, name: '角色管理'},
             { path: '/menu_manager', component: MenuManager, name: '菜单管理' },
             { path: '/feedback_manager', component: FeedbackManager, name: '意见反馈' },
+            { path: '/notice_manager', component: NoticeManager, name: '公告' },
             { path: '/newsinfo_manager', component: NewsInfoManager, name: '新闻资讯' }
         ]
     },
@@ -96,6 +110,21 @@ let routes = [
             { path: '/measure_paper', component: MeasurePaper, name: '图纸管理' },
             { path: '/measure_problem', component: MeasureProblem, name: '爆点管理' },
             { path: '/measure_count', component: MeasureCount, name: '统计管理' }
+        ]
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '学习资料',
+        iconCls: 'fa fa-id-card-o',
+        children: [
+            { path: '/study_data', component: StudyData, name: '题目管理' },
+            { path: '/study_paper', component: StudyPaper, name: '试卷管理' },           
+            { path: '/study_file', component: StudyFile, name: '资料管理' },
+            { path: '/study_worker_type', component: StudyWorkerType, name: '工种类型管理' },
+            { path: '/study_image', component: StudyImage, name: '图片轮播' },
+            { path: '/study_event', component: StudyEvent, name: '学习事件' }
+            
         ]
     },
     {
@@ -142,6 +171,35 @@ let routes = [
         children: [
             { path: '/security_check',component: SecurityCheck, name: '安全检查单'},
             { path: '/security_fine',component: SecurityFine, name: '安全奖惩单'}
+        ]
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '施工任务单管理',
+        iconCls: 'fa fa-address-card',
+        children: [
+            { path: '/construction_task',component: ConstructionTask, name: '施工任务单'}
+        ]
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '工作管理',
+        iconCls: 'fa fa-address-card',
+        children: [
+            { path: '/work_task',component: WorkTask, name: '日常任务'}
+        ]
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '考勤管理',
+        iconCls: 'fa fa-address-card',
+        children: [
+            { path: '/attence_place',component: AttencePlace, name: '考勤地点'},
+            { path: '/attence_mode',component: AttenceMode, name: '考勤模板'},
+            { path: '/attence_log',component: AttenceLog, name: '考勤记录'}
         ]
     },
     {

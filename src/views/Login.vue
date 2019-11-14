@@ -23,8 +23,8 @@
       return {
         logining: false,
         ruleForm2: {
-          account: 'sss',
-          checkPass: '123456'
+          account: '',
+          checkPass: ''
         },
         rules2: {
           account: [
@@ -52,8 +52,8 @@
             //NProgress.start();
             var loginParams = { username: this.ruleForm2.account, password: this.ruleForm2.checkPass };
             this.api.callApi('/JasoUser/loginPc',{
-              "userName": "admin",
-              "password": "123456"
+              "userName": this.ruleForm2.account,
+              "password": this.ruleForm2.checkPass
             }).then(res => {
               debugger
               sessionStorage.setItem("token",res.token);

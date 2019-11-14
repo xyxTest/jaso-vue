@@ -298,7 +298,9 @@
                 });
             },
             initDatas(){
+                var projectId = sessionStorage.getItem("projectId");
                 measureManager.getMeasureProblemList({
+                    'projectId':projectId,
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo

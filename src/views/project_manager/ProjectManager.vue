@@ -3,8 +3,8 @@
         <div style="float: left; margin: 20px 0;">
             <el-input v-model="search.projectName" placeholder="请输入项目名称" style="width: 180px; margin:10px 5px;  " ></el-input>
             <el-input v-model="search.buildingUnit" placeholder="请输入建设单位" style="width: 180px; margin:10px 5px;  "></el-input>
-            <el-input v-model="search.constructUnit" placeholder="请输入施工单位"style="width: 180px;margin:10px 5px; "></el-input>
-            <el-input v-model="search.designUnit" placeholder="请输入设计单位"style="width: 180px;margin:10px 5px; "></el-input>
+            <el-input v-model="search.constructUnit" placeholder="请输入施工单位" style="width: 180px;margin:10px 5px; "></el-input>
+            <el-input v-model="search.designUnit" placeholder="请输入设计单位" style="width: 180px;margin:10px 5px; "></el-input>
             <el-button type="primary" style="margin:10px 5px; " @click="searchProject">搜索</el-button>
             <el-button type="primary" style="margin:10px 5px; " @click="openAddPage">新增</el-button>
             <el-button type="danger" style="margin:10px 5px; " @click="deleteSelect">删除选中</el-button>
@@ -34,8 +34,25 @@
                     <el-form-item label="项目编号" :label-width="formLabelWidth" prop="projectCode">
                         <el-input v-model="form.projectCode" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
-                    <el-form-item label="项目负责人" :label-width="formLabelWidth" prop="projectLeader">
-                        <el-input v-model="form.projectLeader" autocomplete="off" style="width:83%"></el-input>
+                    <el-form-item label="项目负责人" :label-width="formLabelWidth" prop="jasoUserId">
+                         <el-select v-model="form.jasoUserId" filterable placeholder="请选择" style="width:83%">
+                            <el-option
+                                    v-for="item in userList"
+                                    :key="item.jasoUserId"
+                                    :label="item.userRealName"
+                                    :value="item.jasoUserId">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="项目类型" :label-width="formLabelWidth" filterable prop="type">
+                        <el-select v-model="form.type" filterable placeholder="请选择类型" style="width:83%">
+                            <el-option
+                                    v-for="item in typeList"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="城市编码选择" :label-width="formLabelWidth" filterable prop="cityCode">
                         <el-select v-model="form.cityCode" filterable placeholder="请选择城市" style="width:83%">
@@ -60,6 +77,10 @@
                                 multiple>
                             <el-button size="small" type="primary">点击上传</el-button>
                         </el-upload>
+                        <el-image
+                            style="width: 100px; height: 100px"
+                            :src="projectPicUrl"
+                            :preview-src-list="projectPicUrlList"></el-image>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -106,7 +127,7 @@
                     label="项目编码">
             </el-table-column>
             <el-table-column
-                    prop="projectLeader"
+                    prop="userRealName"
                     label="项目负责人">
             </el-table-column>
             <el-table-column
@@ -152,6 +173,10 @@
                     buildingUnit:'',
                     designUnit:'',
                 },
+                projectPicUrl: '',
+                projectPicUrlList: [],
+                userList:[],
+                typeList:[{"label":"进行中","value":1},{"label":"已竣工","value":2}],
                 page: {
                     currentPage: 1,
                     pageSize: 10,
@@ -166,6 +191,7 @@
                     cityCode:'',
                     projectName: '',
                     buildingUnit: '',
+                    type:1,
                     projectIcon:'',
                     constructUnit: '',
                     projectDescribe:'',
@@ -207,16 +233,28 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
-
+            //用户列表获取
+            getAllUserList(){
+                this.api.selectAllUserList().then(res =>{
+                    this.userList=res.data;
+                }).catch(res =>{
+                    this.$message.error(res.message);
+                });
+            },
             //编辑页面
             updateProject(row){
-                debugger
+                this.fileList=[];
+                this.getAllUserList();
+                this.projectPicUrlList=[];
                 this.form = Object.assign({}, row);
-               this.fileList.push({url:filePath+this.form.projectIcon});
+                this.projectPicUrl="http://jasobim.com:8085"+this.form.projectIcon;
+                this.projectPicUrlList.push( this.projectPicUrl);
                 this.dialogFormVisible = true;
             },
             //新增页面
             openAddPage(){
+                this.fileList=[];
+                this.getAllUserList();
                 this.dialogFormVisible = true;
             },
             //新增页面取消按钮

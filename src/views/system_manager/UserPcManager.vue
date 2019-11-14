@@ -3,7 +3,7 @@
         <div style="float: left; margin: 20px 0;">
             <el-input v-model="search.userName" placeholder="请输入用户名" style="width: 180px; margin:10px 5px;  " ></el-input>
             <el-input v-model="search.userTel" placeholder="请输入手机号码" style="width: 180px; margin:10px 5px;  "></el-input>
-            <el-input v-model="search.userRealName" placeholder="请输入真实姓名"style="width: 180px;margin:10px 5px; "></el-input>
+            <el-input v-model="search.userRealName" placeholder="请输入真实姓名" style="width: 180px;margin:10px 5px; "></el-input>
             <el-select v-model="search.userType" placeholder="用户类型选择" style="width: 180px; margin:10px 5px;  ">
                 <el-option
                         v-for="item in options"
@@ -46,23 +46,33 @@
                     <el-form-item label="身份证号码" :label-width="formLabelWidth" prop="userIdCard">
                         <el-input v-model="form.userIdCard" autocomplete="off" style="width:83%"></el-input>
                     </el-form-item>
-                    <el-form-item label="用户类型" :label-width="formLabelWidth" prop="userType">
-                        <el-select v-model="form.userType" placeholder="请选择用户类型" style="width:83%">
+                    <el-form-item label="用户角色" :label-width="formLabelWidth">
+                        <el-select v-model="form.roleId" multiple placeholder="请选择用户角色" style="width:83%" @change="showWorkType">
                             <el-option
-                                    v-for="item in userPcTypeList"
-                                    :key="item.value"
-                                    :label="item.name"
-                                    :value="item.value">
+                                    v-for="role in roleList"
+                                    :key="role.roleId"
+                                    :label="role.roleName"
+                                    :value="role.roleId">
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="角色类型" :label-width="formLabelWidth">
-                        <el-select v-model="form.roleId" multiple placeholder="请选择用户角色" style="width:83%">
+                    <el-form-item label="用户工种" :label-width="formLabelWidth">
+                        <el-select v-model="form.workTypeId" multiple placeholder="请选择用户工种" style="width:83%">
                             <el-option
-                                    v-for="(item,index) in roleList"
+                                    v-for="role in workTypeList"
+                                    :key="role.workTypeId"
+                                    :label="role.workTypeName"
+                                    :value="role.workTypeId">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="项目" :label-width="formLabelWidth">
+                        <el-select v-model="form.projectIdList" multiple placeholder="请选择项目" style="width:83%">
+                            <el-option
+                                    v-for="(item,index) in projectList"
                                     :key="index"
-                                    :label="item.roleName"
-                                    :value="item.roleId">
+                                    :label="item.projectName"
+                                    :value="item.projectId">
                             </el-option>
                         </el-select>
                     </el-form-item>
@@ -77,6 +87,7 @@
                     </el-form-item>
                     <el-form-item label="头像" :label-width="formLabelWidth" prop="projectIcon">
                         <el-upload
+                                v-if="form.jasoUserId==null"
                                 class="upload-demo"
                                 action="http://jasobim.com:8085/api/files/uploadFiles"
                                 :on-success="returnList"
@@ -88,6 +99,9 @@
                                 multiple>
                             <el-button size="small" type="primary">点击上传</el-button>
                         </el-upload>
+                        <el-image v-if="form.jasoUserId!=null"
+                            style="width: 100px; height: 100px"
+                            :src="imagUrl"></el-image>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -179,7 +193,7 @@
 <script >
     import util from  '../../common/js/util';
     var pageParams = {page: {pageSize: 10, pageNo: 1}}
-    var filePath="http://jasobim.com:8085/";
+    var filePath="http://jasobim.com:8085";
     export default {
 
         data() {
@@ -217,11 +231,13 @@
                 dialogTableVisible: false,
                 dialogFormVisible: false,
                 departmentOptions:[],
+                userPicUrlList:[],
+                imagUrl:'',
                 form: {
+                    jasoUserId:null,
                     userName: '',
                     userTel: '',
                     userRealName: '',
-                    userType: [],
                     password: '',
                     againPassword:'',
                     userEmail:'',
@@ -229,7 +245,9 @@
                     userIcon: '',
                     userIdCard: '',
                     departmentTree: [],
-                    roleId: [],
+                    workTypeId:[],//工种
+                    roleId: [],//角色
+                    projectIdList:[],//项目
                     isApp:''
                 },
                 fileList:[],
@@ -237,9 +255,10 @@
                 userPcTypeList:[
                     {name:'公司管理人员',value: 1},
                     {name:'项目管理人员',value: 2},
-                    {name:'项目工人',value: 3}
+                    {name:'项目工人',value: 3},
+                    {name:'超级管理员',value: 4}
                 ],
-               
+                projectList:[],
                 formLabelWidth: '120px',
             //////////////////////////
                 /*选中删除*/
@@ -251,6 +270,7 @@
                     userType:null
                 },
                 roleList: [],
+                workTypeList:[],
                 page: {
                     currentPage: 1,
                     pageSize: 10,
@@ -267,7 +287,25 @@
             }
         },
         methods: {
-             returnList(response, file, fileList){
+            showWorkType(){
+                
+            },
+            getWorkTypeListByRoleId(params){
+                this.api.getWorkTypeListByRoleId(params).then(res =>{
+                    this.workTypeList=res.data;
+                });
+            },
+            getProjectList(){
+                let userInfo = JSON.parse(sessionStorage.getItem("user"));
+                this.api.selectProjectLists({
+                    "companyId":userInfo.companyId
+                }).then(res => {
+                    this.projectList=res.data;
+                }).catch(res => {
+
+                });
+            },
+            returnList(response, file, fileList){
                 this.form.userIcon=response.data[0];
             },	
             handleChange(value) {
@@ -286,13 +324,10 @@
                 this.api.getUserDepartmentList(row).then( res =>{
                     let getList = res.data;
                     let arraList=[];
-                    console.log('getlist:',getList);
                     if(getList.length>0){
                         for(let i=0;i<getList.length;i++){
-                            debugger
                             arraList.push(getTreeDeepArr(getList[i].departmentId,this.departmentOptions));
                         }
-                        //this.form.departmentTree=arraList;
                         this.$set(this.form, 'departmentTree', arraList);
                     }
                 })
@@ -319,23 +354,46 @@
 
             //编辑页面
             updateUserPc(row){
+               this.dialogFormVisible = true;
                 this.form = Object.assign({}, row);
-                this.form.againPassword=this.form.pcPassword;
-                this.fileList.push({url:filePath+this.form.userIcon});
+                this.form.roleId=[];
+                this.form.againPassword=this.form.password;
                 //获取用户详情
                 this.getUserPcDetail(row);
                 //获取用户的组织架构
                 this.getUserDepartmentList(row);
                 //加载用户角色列表
                 this.roleListGet();
-                this.dialogFormVisible = true;
+                //获取用户-项目关系列表
+                this.getProjectListByUser(row);
+                //获取所有项目列表
+                this.getProjectList();
+                this.userPicUrlList=[];
+                this.imagUrl="http://jasobim.com:8085"+this.form.userIcon; 
+                this.fileList.push({url:filePath+this.form.userIcon});
+            },
+            //获取详情中的选中项目列表
+            getProjectListByUser(row){
+                this.api.getProjectListByUser(row).then(res => {
+                    debugger
+                    this.form.projectIdList=res.data.map(e => {
+                        return e.projectId
+                    });
+                }).catch(res => {
+                    this.$message.error(res.message);
+                });
+            },
+            getRoleListByUserId(){
+                this.api.getRoleListByUserId({"jasoUserId":this.form.jasoUserId}).then(res =>{
+                     for(var i=0;i<res.data.length;i++){
+                        this.form.roleId.push(res.data[i].roleId);
+                    }
+                });
             },
             //获取用户详情(获取当前用户角色)
             getUserPcDetail(row){
                 this.api.getUserPcDetail(row).then(res => {
-                    debugger
                     this.userRoles = res.data
-                    console.log('roleList',this.roleList);
                     this.form.roleId=res.data.map(e => {
                         return e.roleId
                     });
@@ -345,7 +403,10 @@
             },
             //新增页面
             openAddPage(){
+                this.form={};
+                this.fileList=[];
                 this.roleListGet();
+                this.getProjectList();
                 this.dialogFormVisible = true;
             },
             //新增页面取消按钮
@@ -353,19 +414,16 @@
                 /*debugger
                 this.$refs[form].resetFields();*/
                 this.dialogFormVisible = false;
+                this.fileList=[];
             },
             //提交
             submit(form){
                 this.$refs['form'].validate((valid) => {
                     if (valid) {
-                        debugger
-                        console.log('this.form',this.form);
-                        if(this.form.roleId.length>0){
-
-                        }
                         this.api.addUserPc(this.form).then(res =>{
                             this.initDatas();
                             this.dialogFormVisible = false;
+                             this.fileList=[];
                         }).catch(res =>{
                             this.$message.error(res.message);
                         })
@@ -376,16 +434,11 @@
                 });
             },
             //密码验证
-
-
-
             //加载角色列表
             roleListGet(){
-                var userInfo = JSON.parse(sessionStorage.getItem("user"))
-                this.api.getRoleList({
-                    "companyId":userInfo.companyId
-                }).then(res =>{
+                this.api.getAllRoleList().then(res =>{
                     this.roleList = res.data;
+                    this.getRoleListByUserId();
                 }).catch(res =>{
                     this.$message.error(res.message);
                 });
@@ -414,7 +467,6 @@
                     },
                    ...this.search
                 }).then(res => {
-                    debugger
                     this.tableData=res.data.data;
                     this.page.total=res.data.page.total;
                 }).catch(res => {

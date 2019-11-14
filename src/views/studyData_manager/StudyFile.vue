@@ -1,26 +1,58 @@
 <template>
     <div>
-        <el-dialog title="新闻资讯新增" :visible.sync="dialogFormVisible" width="40%">
+        <el-dialog title="学习资料上传" :visible.sync="dialogFormVisible" width="40%">
             <el-form :model="form" status-icon ref="form">
-                <el-form-item label="标题" :label-width="formLabelWidth" prop="topic">
-                    <el-input v-model="form.topic" autocomplete="off" style="width:83%"></el-input>
+                <el-form-item label="资料名称" :label-width="formLabelWidth" prop="title">
+                    <el-input v-model="form.title" autocomplete="off" style="width:83%"></el-input>
                 </el-form-item>
-                <el-form-item label="内容" :label-width="formLabelWidth" prop="content">
-                    <el-input type="textarea" v-model="form.content" autocomplete="off" style="width:83%"></el-input>
-                </el-form-item>
-                <el-form-item label="图片" :label-width="formLabelWidth" prop="remark">
-                    <el-input v-model="form.remark" autocomplete="off" style="width:83%"></el-input>
-                </el-form-item>
-                <el-form-item label="类型" :label-width="formLabelWidth" prop="readStatus">
-                    <el-select v-model="form.readStatus" placeholder="请选择类型" style="width:83%">
+                <el-form-item label="工种类型" :label-width="formLabelWidth" prop="studyWorkerTypeId">
+                    <el-select v-model="form.studyWorkerTypeId" placeholder="请选择工种类型" style="width:83%">
                         <el-option
-                                v-for="item in options"
+                                v-for="item in studyWorkerTypeList"
+                                :key="item.studyWorkerTypeId"
+                                :label="item.name"
+                                :value="item.studyWorkerTypeId">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="资料类型" :label-width="formLabelWidth" prop="type">
+                    <el-select v-model="form.type" placeholder="资料类型" style="width:83%">
+                        <el-option
+                                v-for="item in typeList"
                                 :key="item.value"
                                 :label="item.label"
                                 :value="item.value">
                         </el-option>
                     </el-select>
-                 </el-form-item>
+                </el-form-item>
+                <el-form-item label="图片上传" :label-width="formLabelWidth" prop="fileUrl">
+                        <el-upload
+                                class="upload-demo"
+                                action="http://jasobim.com:8085/api/files/uploadFiles"
+                                :on-success="returnList1"
+                                name="file"
+                                v-model="form.pic"
+                                auto-upload
+                                list-type="picture"
+                                :file-list="fileList1"
+                                multiple>
+                            <el-button size="small" type="primary">点击上传</el-button>
+                        </el-upload>
+                </el-form-item>
+                <el-form-item label="资料上传" :label-width="formLabelWidth" prop="fileUrl">
+                        <el-upload
+                                class="upload-demo"
+                                action="http://jasobim.com:8085/api/files/uploadFiles"
+                                :on-success="returnList"
+                                name="file"
+                                v-model="form.fileUrl"
+                                auto-upload
+                                list-type="picture"
+                                :file-list="fileList"
+                                multiple>
+                            <el-button size="small" type="primary">点击上传</el-button>
+                        </el-upload>
+                </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="resetForm('form')">取 消</el-button>
@@ -40,41 +72,35 @@
                     type="selection"
                     width="55">
             </el-table-column>
-             <el-table-column
-                    prop="userRealName"
-                    label="创建人姓名">
+            <el-table-column
+                    prop="title"
+                    label="资料名称">
             </el-table-column>
             <el-table-column
-                    prop="content"
-                    label="内容">
+                    prop="fileUrl"
+                    label="资料地址">
             </el-table-column>
             <el-table-column
-                    prop="topic"
-                    label="标题">
+                    prop="name"
+                    label="工种名称">
             </el-table-column>
             <el-table-column
-                    prop="readNum"
-                    label="已读数量">
-            </el-table-column>
-             <el-table-column
-                    prop="readStatus"
-                    label="类型">
+                    prop="type"
+                    label="类别">
                 <template slot-scope="scope">
                     <template>
-                        {{options[scope.row.readStatus-1].label}}
+                        {{typeList[scope.row.type-1].label}}
                     </template>
                 </template>
             </el-table-column>
             <el-table-column
                     prop="createTime"
-                    label="创建时间"
-                    show-overflow-tooltip
+                    label="上传时间"
                     :formatter="formatDate">
             </el-table-column>
             <el-table-column
                     label="操作">
                 <template slot-scope="scope">
-                    <el-button type="text" @click="updateNewsInfo(scope.row)">编辑</el-button>
                     <el-button type="text" style="color:red;" @click="deleteSelects(scope.row)">删除</el-button>
                 </template>
             </el-table-column>
@@ -94,21 +120,12 @@
 </template>
 
 <script>
+    import studyDataApi from '../../jaso_api/study_data.js';
     var pageParams = {page: {pageSize: 10, pageNo: 1}}
     export default {
 
         data() {
             return {
-                options: [{
-                    value: 1,
-                    label: '一般'
-                }, {
-                    value: 2,
-                    label: '热门'
-                }, {
-                    value: 3,
-                    label: '置顶'
-                }],
                 page: {
                     currentPage: 1,
                     pageSize: 10,
@@ -118,39 +135,46 @@
                 /*新增弹出框操作*/
                 dialogTableVisible: false,
                 dialogFormVisible: false,
+                studyWorkerTypeList: [],
+                typeList:[{"label":"试听学习","value":1},{"label":"阅读资料","value":2}],
                 form: {
-                    content: '',
-                    topic:'',
-                    readStatus:'',
-                    readNum:0,
-                    remark:''
+                    title: '',
+                    fileUrl:'',
+                    type:'',
+                    studyWorkerTypeId:'',
+                    pic:''
                 },
+                fileList:[],
+                fileList1:[],
                 formLabelWidth: '120px',
                 //////////////////////////
                 /*选中删除*/
-                multipleSelection: [],
+                multipleSelection: []
             }
         },
         methods: {
-             formatDate(row, column) {
-                let date = new Date(parseInt(row.createTime));
-                return this.api.formatDate(date);
-            },
+            returnList(response, file, fileList){
+                this.form.fileUrl=response.data[0];
+            },	
+            returnList1(response, file, fileList1){
+                this.form.pic=response.data[0];
+            },	
             //新增页面
             openAddPage(){
+                this.getAllStudyWorkerTypeList();
                 this.dialogFormVisible = true;
+                this.form={};
+                this.fileList=[];
+                this.fileList1=[];
             },
             resetForm(form) {
+                /*debugger
+                this.$refs[form].resetFields();*/
                 this.dialogFormVisible = false;
-            },
-            updateNewsInfo(row){
-                //编辑页面
-                this.form = Object.assign({}, row);
-                this.dialogFormVisible = true;
             },
             //提交
             submit(form){
-                this.api.addNewsInfo(this.form).then(res =>{
+               studyDataApi.addStudyFile(this.form).then(res =>{
                     this.initDatas();
                     this.dialogFormVisible = false;
                     this.$message.success(res.message);
@@ -158,9 +182,21 @@
                     this.$message.error(res.message);
                 });
             },
+            //获取所有工种类型
+            getAllStudyWorkerTypeList(){
+                studyDataApi.getAllStudyWorkerTypeList().then(res =>{
+                    this.studyWorkerTypeList = res.data; 
+                }).catch(res =>{
+
+                });
+            },
+             formatDate(row, column) {
+                let date = new Date(parseInt(row.createTime));
+                return this.api.formatDate(date);
+            },
             //删除选中
             deleteSelect(row){
-                this.api.deleteNewsInfoList(this.multipleSelection).then( res =>{
+                studyDataApi.deleteStudyFile(this.multipleSelection).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -169,7 +205,7 @@
             },
             //删除按钮
             deleteSelects(row){
-                this.api.deleteNewsInfoList([row]).then( res =>{
+                studyDataApi.deleteStudyFiledeleteStudyFile([row]).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -179,9 +215,8 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
-           
             initDatas(){
-                this.api.getNewsInfoList({
+                studyDataApi.getStudyFileList({
                     'pageVo':{
                         "pageSize": pageParams.page.pageSize,
                         "pageNo": pageParams.page.pageNo

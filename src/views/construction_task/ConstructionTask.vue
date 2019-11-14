@@ -1,32 +1,6 @@
 <template>
     <div>
-        <el-dialog title="新闻资讯新增" :visible.sync="dialogFormVisible" width="40%">
-            <el-form :model="form" status-icon ref="form">
-                <el-form-item label="标题" :label-width="formLabelWidth" prop="topic">
-                    <el-input v-model="form.topic" autocomplete="off" style="width:83%"></el-input>
-                </el-form-item>
-                <el-form-item label="内容" :label-width="formLabelWidth" prop="content">
-                    <el-input type="textarea" v-model="form.content" autocomplete="off" style="width:83%"></el-input>
-                </el-form-item>
-                <el-form-item label="图片" :label-width="formLabelWidth" prop="remark">
-                    <el-input v-model="form.remark" autocomplete="off" style="width:83%"></el-input>
-                </el-form-item>
-                <el-form-item label="类型" :label-width="formLabelWidth" prop="readStatus">
-                    <el-select v-model="form.readStatus" placeholder="请选择类型" style="width:83%">
-                        <el-option
-                                v-for="item in options"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                        </el-option>
-                    </el-select>
-                 </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="resetForm('form')">取 消</el-button>
-                <el-button type="primary" @click="submit('form')">确 定</el-button>
-            </div>
-        </el-dialog>
+        
         <!-- 新增弹出框 -->
         <el-button type="primary" style="margin:10px 30px;float:right; " @click="openAddPage">新增</el-button>
         <!-- 新增弹出框底层 -->
@@ -40,42 +14,39 @@
                     type="selection"
                     width="55">
             </el-table-column>
-             <el-table-column
-                    prop="userRealName"
-                    label="创建人姓名">
+            <el-table-column
+                    type="index"
+                    label="序号"
+                    width="50">
             </el-table-column>
             <el-table-column
-                    prop="content"
-                    label="内容">
+                    prop="taskNo"
+                    label="任务单单号">
             </el-table-column>
             <el-table-column
-                    prop="topic"
-                    label="标题">
+                    prop="taskName"
+                    label="任务单名称">
             </el-table-column>
             <el-table-column
-                    prop="readNum"
-                    label="已读数量">
-            </el-table-column>
-             <el-table-column
-                    prop="readStatus"
-                    label="类型">
-                <template slot-scope="scope">
-                    <template>
-                        {{options[scope.row.readStatus-1].label}}
-                    </template>
-                </template>
+                    prop="workDate"
+                    label="任务单日期">
             </el-table-column>
             <el-table-column
-                    prop="createTime"
-                    label="创建时间"
-                    show-overflow-tooltip
-                    :formatter="formatDate">
+                    prop="examineStatusMessage"
+                    label="审核状态描述">
+            </el-table-column>
+            <el-table-column
+                    prop="taskStatusMessage"
+                    label="最新审批结果">
+            </el-table-column>
+            <el-table-column
+                    prop="founderName"
+                    label="签发人">
             </el-table-column>
             <el-table-column
                     label="操作">
                 <template slot-scope="scope">
-                    <el-button type="text" @click="updateNewsInfo(scope.row)">编辑</el-button>
-                    <el-button type="text" style="color:red;" @click="deleteSelects(scope.row)">删除</el-button>
+                    <el-button type="text" @click="detail(scope.row)">详情</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -85,7 +56,7 @@
                     @current-change="handleCurrentChange"
                     :current-page="page.currentPage"
                     :page-sizes="[10, 20, 30, 40]"
-                    :page-size="page.pageSize"
+                    :page-size="page.size"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="page.total">
             </el-pagination>
@@ -94,21 +65,12 @@
 </template>
 
 <script>
-    var pageParams = {page: {pageSize: 10, pageNo: 1}}
+ import axios from 'axios';
+   var pageParams = {size: 10, page: 1}
     export default {
-
+        
         data() {
             return {
-                options: [{
-                    value: 1,
-                    label: '一般'
-                }, {
-                    value: 2,
-                    label: '热门'
-                }, {
-                    value: 3,
-                    label: '置顶'
-                }],
                 page: {
                     currentPage: 1,
                     pageSize: 10,
@@ -118,39 +80,35 @@
                 /*新增弹出框操作*/
                 dialogTableVisible: false,
                 dialogFormVisible: false,
+                projectList: [],
                 form: {
-                    content: '',
-                    topic:'',
-                    readStatus:'',
-                    readNum:0,
-                    remark:''
+                    machineryName: '',
+                    projectId: ''
                 },
                 formLabelWidth: '120px',
                 //////////////////////////
                 /*选中删除*/
-                multipleSelection: [],
+                multipleSelection: []
             }
         },
         methods: {
-             formatDate(row, column) {
-                let date = new Date(parseInt(row.createTime));
-                return this.api.formatDate(date);
-            },
             //新增页面
             openAddPage(){
                 this.dialogFormVisible = true;
             },
             resetForm(form) {
+                /*debugger
+                this.$refs[form].resetFields();*/
                 this.dialogFormVisible = false;
             },
-            updateNewsInfo(row){
+            detail(row){
                 //编辑页面
                 this.form = Object.assign({}, row);
                 this.dialogFormVisible = true;
             },
             //提交
             submit(form){
-                this.api.addNewsInfo(this.form).then(res =>{
+                this.api.addMachinery(this.form).then(res =>{
                     this.initDatas();
                     this.dialogFormVisible = false;
                     this.$message.success(res.message);
@@ -160,7 +118,7 @@
             },
             //删除选中
             deleteSelect(row){
-                this.api.deleteNewsInfoList(this.multipleSelection).then( res =>{
+                this.api.deleteMachineryList(this.multipleSelection).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -169,7 +127,7 @@
             },
             //删除按钮
             deleteSelects(row){
-                this.api.deleteNewsInfoList([row]).then( res =>{
+                this.api.deleteMachineryList([row]).then( res =>{
                     this.$message.success(res.message);
                     this.initDatas();
                 }).catch(res =>{
@@ -179,18 +137,26 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
-           
-            initDatas(){
-                this.api.getNewsInfoList({
-                    'pageVo':{
-                        "pageSize": pageParams.page.pageSize,
-                        "pageNo": pageParams.page.pageNo
-                    }
+            getProjectList(){
+                let userInfo = JSON.parse(sessionStorage.getItem("user"));
+                this.api.selectProjectLists({
+                    "companyId":userInfo.companyId
                 }).then(res => {
-                    this.tableData=res.data.data;
-                    this.page.total=res.data.page.total;
+                    debugger
+                    this.projectList=res.data;
                 }).catch(res => {
 
+                });
+            },
+            initDatas(){
+                let data = new FormData();
+                data.append('size',pageParams.size);
+                data.append('page',pageParams.page);
+                axios.post(`http://bim.jaso.com.cn/api/taskSheets/taskList`,data)
+                .then(res=>{
+                        debugger
+                        this.tableData=res.data.data.content;    
+                        this.page.total=res.data.data.totalElements;    
                 });
             },
             tableRowClassName({row, rowIndex}) {
@@ -202,18 +168,19 @@
                 return '';
             },
             handleSizeChange(val) {
-                pageParams.page.pageSize = val
+                pageParams.size = val
                 this.initDatas()
                 console.log(`每页 ${val} 条`);
             },
             handleCurrentChange(val) {
-                pageParams.page.pageNo = val
+                pageParams.page = val
                 this.initDatas()
                 console.log(`当前页: ${val}`);
             }
         },
         mounted() {
             this.initDatas();
+            this.getProjectList();
         }
     }
 </script>

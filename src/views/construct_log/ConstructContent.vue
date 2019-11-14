@@ -1,6 +1,6 @@
 <template>
     <div style="float: left">
-        <div class="block" style="width:30%;margin-top:50px;float: left">
+        <!--<div class="block" style="width:30%;margin-top:50px;float: left">
             <el-tree
                     :data="treeData"
                     node-key="id"
@@ -8,9 +8,9 @@
                     :default-expand-all="true"
                     :render-content="renderContent">
             </el-tree>
-        </div>
-        <div style="width:70%;float: left">
-             <el-button type="primary" style="margin:10px 30px;float:right; " @click="openImportPage">物资导入</el-button>
+        </div>-->
+        <div style="float: left">
+             <el-button type="primary" style="margin:10px 30px;float:right; " @click="openImportPage">施工内容导入</el-button>
              <el-dialog
                         :close-on-click-modal="false"
                         :visible.sync="dialogImportMaterialVisible"
@@ -162,9 +162,9 @@
         },
         methods: {
              openImportPage(){
-                if(this.utils.checkProject(this)){
+                //if(this.utils.checkProject(this)){
                     this.dialogImportMaterialVisible = true;
-                }
+                //}
             },
             //导入表格数据
              handleImportFile(e) {
